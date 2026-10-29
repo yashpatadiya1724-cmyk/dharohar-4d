@@ -112,6 +112,15 @@ export default function TodayPage() {
             <p className="text-lifepulse-100/90 text-sm max-w-sm">
               Ahmedabad • Satellite Ward • Goyal Intercity
             </p>
+            <div className="pt-1">
+              <Link
+                href="/onboarding"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold bg-white/15 hover:bg-white/25 text-white px-2.5 py-0.5 rounded-full border border-white/20 transition-colors"
+              >
+                <span>Edit Household & Appliances</span>
+                <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
           </div>
 
           {/* Circular Score Gauge */}
