@@ -99,8 +99,7 @@ def complete_user_action(
     )
     db.add(ledger_entry)
     
-    # 7. Compute Streak
-    # Count consecutive days backwards
+    # 7. Compute Streak & Auto-Award Badges
     streak = 1
     curr_check = date.today() - timedelta(days=1)
     while True:
@@ -118,6 +117,27 @@ def complete_user_action(
         else:
             break
             
+    # Check and award badges
+    from app.models import Badge, UserBadge
+    user_badge_ids = {ub.badge_id for ub in db.query(UserBadge).filter(UserBadge.user_id == user_id).all()}
+    all_badges = {b.code: b for b in db.query(Badge).all()}
+    
+    # 1. First Action Badge
+    if "first_action" in all_badges and all_badges["first_action"].id not in user_badge_ids:
+        db.add(UserBadge(user_id=user_id, badge_id=all_badges["first_action"].id))
+        
+    # 2. 7-Day Streak Badge
+    if streak >= 7 and "streak_7" in all_badges and all_badges["streak_7"].id not in user_badge_ids:
+        db.add(UserBadge(user_id=user_id, badge_id=all_badges["streak_7"].id))
+        
+    # 3. Peak Shifter
+    if "peak" in action.code and "peak_shifter" in all_badges and all_badges["peak_shifter"].id not in user_badge_ids:
+        db.add(UserBadge(user_id=user_id, badge_id=all_badges["peak_shifter"].id))
+        
+    # 4. Plastic Warrior
+    if action.theme == "reduce_plastic" and "plastic_warrior" in all_badges and all_badges["plastic_warrior"].id not in user_badge_ids:
+        db.add(UserBadge(user_id=user_id, badge_id=all_badges["plastic_warrior"].id))
+
     db.commit()
     
     # 8. Recompute score

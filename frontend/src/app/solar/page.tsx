@@ -172,6 +172,40 @@ export default function SolarCalculatorPage() {
               </div>
             </div>
 
+            {/* Dynamic Visual Solar Roof Simulation Graphic */}
+            <div className="bg-slate-950/80 rounded-2xl p-4 border border-white/10 space-y-3">
+              <div className="flex items-center justify-between text-xs text-slate-300">
+                <span className="font-bold flex items-center gap-1.5 text-amber-300">
+                  <Sun className="w-4 h-4 text-amber-400" />
+                  <span>Interactive Rooftop Panel Array ({Math.round(result.recommended_kw * 3)} Solar Panels)</span>
+                </span>
+                <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-md text-slate-400">
+                  Orientation: South-Facing (Gujarat Optimal 23° Tilt)
+                </span>
+              </div>
+
+              {/* Roof Grid Visualizer */}
+              <div className="p-4 bg-gradient-to-b from-slate-900 to-slate-950 rounded-xl border border-white/5 flex flex-wrap gap-2 justify-center items-center min-h-[100px]">
+                {Array.from({ length: Math.min(24, Math.round(result.recommended_kw * 3)) }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-10 h-14 bg-gradient-to-br from-blue-700 via-blue-900 to-slate-900 rounded-sm border border-cyan-400/40 shadow-xs flex flex-col justify-between p-1 hover:border-cyan-300 transition-all hover:scale-105"
+                  >
+                    <div className="grid grid-cols-2 gap-0.5 h-full opacity-60">
+                      <div className="bg-cyan-500/20 rounded-xs" />
+                      <div className="bg-cyan-500/20 rounded-xs" />
+                      <div className="bg-cyan-500/20 rounded-xs" />
+                      <div className="bg-cyan-500/20 rounded-xs" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-slate-400">
+                <span>⚡ Clean Generation: ~{result.monthly_generation_kwh} units/month</span>
+                <span className="text-emerald-400 font-semibold">CO₂ Offset: ~{result.co2_avoided_tonnes_lifetime} Tonnes</span>
+              </div>
+            </div>
+
             {/* 4 Financial Metric Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div className="bg-white/5 rounded-2xl p-3 border border-white/10">

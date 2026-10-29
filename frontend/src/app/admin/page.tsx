@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import { AhmedabadWardMap } from "@/components/AhmedabadWardMap";
 import {
   Shield,
   Zap,
@@ -69,12 +70,22 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="text-right">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Jurisdiction
-          </span>
-          <div className="text-sm font-extrabold text-slate-900">
-            Ahmedabad Municipal Corp (AMC)
+        <div className="flex items-center gap-3">
+          <a
+            href="/api/v1/admin/export/csv"
+            download="GEDA_Ahmedabad_Ward_Impact_Report.csv"
+            className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all inline-flex items-center gap-1.5 cursor-pointer"
+          >
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-200" />
+            <span>Download CSV Report</span>
+          </a>
+          <div className="text-right hidden sm:block">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Jurisdiction
+            </span>
+            <div className="text-sm font-extrabold text-slate-900">
+              Ahmedabad (AMC)
+            </div>
           </div>
         </div>
       </div>
@@ -137,6 +148,9 @@ export default function AdminDashboardPage() {
           <p className="text-[10px] text-slate-500">DAU: {overview?.dau_count ?? 63}</p>
         </div>
       </div>
+
+      {/* Interactive Ahmedabad Ward Vector Heatmap */}
+      <AhmedabadWardMap />
 
       {/* Ward Heatmap & Performance Table */}
       <section className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs space-y-4">

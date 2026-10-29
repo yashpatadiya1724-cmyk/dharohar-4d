@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { api } from "@/lib/api";
+import { ConfettiBurst } from "@/components/ConfettiBurst";
+import { VoiceActionInput } from "@/components/VoiceActionInput";
 import {
   Sparkles,
   Zap,
@@ -30,6 +32,7 @@ export default function TodayPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showDriverModal, setShowDriverModal] = useState(false);
   const [completedSuccessMsg, setCompletedSuccessMsg] = useState("");
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -56,6 +59,8 @@ export default function TodayPage() {
     try {
       const res = await api.completeAction(selectedAction.id, verifyType);
       setCompletedSuccessMsg(res.message || "Action recorded successfully!");
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
       // Update action status in UI
       setActions((prev) =>
         prev.map((a) => (a.id === selectedAction.id ? { ...a, status: "done" } : a))
@@ -332,6 +337,11 @@ export default function TodayPage() {
           })}
         </div>
       </section>
+
+      {/* Voice Action Logging Widget */}
+      <VoiceActionInput />
+
+      <ConfettiBurst active={showConfetti} />
 
       {/* 4. MODAL: Verification Proof Modal */}
       {selectedAction && (

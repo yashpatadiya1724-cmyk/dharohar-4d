@@ -10,13 +10,32 @@ export default function PeakPlannerPage() {
   const [plan, setPlan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [remindedAppliance, setRemindedAppliance] = useState<string | null>(null);
+  const [meterLive, setMeterLive] = useState<any>(null);
+  const [spikeAlert, setSpikeAlert] = useState<any>(null);
+  const [simulatingSpike, setSimulatingSpike] = useState(false);
 
   useEffect(() => {
     api.getPeakPlan()
       .then((data) => setPlan(data))
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
+
+    api.getLiveSmartMeter()
+      .then((data) => setMeterLive(data))
+      .catch((e) => console.error(e));
   }, []);
+
+  const handleSimulateSpike = async () => {
+    setSimulatingSpike(true);
+    try {
+      const res = await api.simulateMeterSpike(42.5);
+      setSpikeAlert(res);
+    } catch (e: any) {
+      alert("Spike error: " + e.message);
+    } finally {
+      setSimulatingSpike(false);
+    }
+  };
 
   const handleSetReminder = async (appliance: string, time: string) => {
     try {
@@ -67,6 +86,62 @@ export default function PeakPlannerPage() {
           </div>
           <p className="text-[11px] text-emerald-700/80">Shiftable to Off-Peak Hours</p>
         </div>
+      </div>
+
+      {/* Live Smart Meter & Anomaly Detection Widget */}
+      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-3xl p-5 border border-white/10 shadow-lg space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+              Live Smart Meter Feed ({meterLive?.smart_meter_id || "AMC-SM-9842"})
+            </span>
+          </div>
+          <span className="text-[11px] bg-white/10 text-slate-300 px-2 py-0.5 rounded-full border border-white/10">
+            Model: {meterLive?.ml_model_active || "M5 Isolation Forest"}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+          <div className="bg-white/5 p-3 rounded-2xl border border-white/5 text-center">
+            <span className="text-[10px] text-slate-400 font-bold uppercase">Real-Time Load</span>
+            <div className="text-2xl font-black text-white mt-0.5">
+              {meterLive?.current_load_kw ?? 1.65} <span className="text-xs font-normal">kW</span>
+            </div>
+            <span className="text-[10px] text-emerald-400 font-semibold">Grid Synchronized</span>
+          </div>
+
+          <div className="bg-white/5 p-3 rounded-2xl border border-white/5 text-center">
+            <span className="text-[10px] text-slate-400 font-bold uppercase">Current Tariff</span>
+            <div className="text-2xl font-black text-amber-300 mt-0.5">
+              ₹{meterLive?.current_tariff_rs ?? 7.50} <span className="text-xs font-normal text-slate-300">/ kWh</span>
+            </div>
+            <span className="text-[10px] text-rose-300 font-semibold">Peak Surcharge Active</span>
+          </div>
+
+          <div className="text-center sm:text-right">
+            <button
+              onClick={handleSimulateSpike}
+              disabled={simulatingSpike}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50"
+            >
+              {simulatingSpike ? "Testing M5..." : "Simulate Anomaly Spike"}
+            </button>
+            <p className="text-[10px] text-slate-400 mt-1">Tests M5 Isolation Forest</p>
+          </div>
+        </div>
+
+        {spikeAlert && (
+          <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/50 text-xs text-rose-200 animate-in fade-in duration-200 space-y-1">
+            <div className="flex items-center gap-2 font-bold text-rose-300">
+              <Zap className="w-4 h-4 text-rose-400" />
+              <span>{spikeAlert.alert_message}</span>
+            </div>
+            <div className="text-[11px] text-rose-300/80">
+              Algorithm: {spikeAlert.ml_algorithm} • Injected Spike: {spikeAlert.spike_kw} kW • Severity: {spikeAlert.severity}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 24-Hour Timeline Bar Chart */}

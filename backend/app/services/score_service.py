@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models import Household, Habit, Appliance, Score, ImpactLedger, User
 from app.schemas import ScoreResponse, ScoreDriver
 from app.core.config import settings
+from app.services.ml_service import ml_service
 import json
 
 def calculate_life_score(user_id: str, db: Session) -> ScoreResponse:
@@ -9,19 +10,59 @@ def calculate_life_score(user_id: str, db: Session) -> ScoreResponse:
     
     # Defaults if user has not completed detailed onboarding yet
     members = household.members if household else 3
-    monthly_kwh = household.monthly_kwh if household else 240.0
     commute = household.commute_mode if household else "two_wheeler"
     
+    # ML-Powered Baseline Estimation:
+    # Build feature dictionary for M1 Gradient Boosting Model
+    appliances_list = household.appliances if household else []
+    ac_app = next((a for a in appliances_list if a.type == "ac"), None)
+    geyser_app = next((a for a in appliances_list if a.type == "geyser"), None)
+    fridge_app = next((a for a in appliances_list if a.type == "fridge"), None)
+    fans_count = sum(a.count for a in appliances_list if a.type == "fan") or 3
+    led_count = sum(a.count for a in appliances_list if a.type == "led_bulb") or 6
+    total_lights = max(led_count, 12)
+    led_share = min(1.0, led_count / total_lights)
+    washing_app = next((a for a in appliances_list if a.type == "washing"), None)
+    ev_app = next((a for a in appliances_list if a.type in ["ev", "ev_charger"]), None)
+
+    home_type_map = {"1BHK": 0, "2BHK": 1, "3BHK": 2, "Bungalow": 3, "Flat": 1, "Rented": 0}
+    home_type_code = home_type_map.get(household.home_type if household else "2BHK", 1)
+
+    ml_features = {
+        "members": members,
+        "home_type": home_type_code,
+        "ac_count": ac_app.count if ac_app else 0,
+        "ac_star": ac_app.star_rating if ac_app else 3,
+        "ac_hours": ac_app.hours_per_day if ac_app else 0.0,
+        "fridge": 1 if fridge_app else 0,
+        "geyser": 1 if geyser_app else 0,
+        "geyser_hours": geyser_app.hours_per_day if geyser_app else 0.0,
+        "fans": fans_count,
+        "led_share": led_share,
+        "lights": total_lights,
+        "washing": 1 if washing_app else 0,
+        "ev": 1 if ev_app else 0,
+        "season": 1 # Summer peak model calibration
+    }
+
+    # Run M1 ML Model inference
+    ml_predicted_kwh = ml_service.estimate_household_kwh(ml_features)
+    
+    # Blend with bill if bill is provided
+    if household and household.monthly_bill_rs and household.monthly_bill_rs > 0:
+        bill_kwh = household.monthly_bill_rs / settings.DEFAULT_BLENDED_TARIFF
+        monthly_kwh = round((ml_predicted_kwh * 0.6) + (bill_kwh * 0.4), 1)
+    else:
+        monthly_kwh = round(ml_predicted_kwh, 1)
+
     # 1. Electricity intensity (35 pts max)
     # Benchmark: Gujarat urban benchmark ~50 kWh/person/month
     per_capita_kwh = monthly_kwh / max(1, members)
-    # Higher savings -> higher score
     if per_capita_kwh <= 35:
         elec_score = 35.0
     elif per_capita_kwh >= 150:
         elec_score = 5.0
     else:
-        # linear interpolate between 35 kWh (35 pts) and 150 kWh (5 pts)
         elec_score = 35.0 - ((per_capita_kwh - 35) / (150 - 35)) * 30.0
     elec_score = max(5.0, min(35.0, elec_score))
     
@@ -32,7 +73,6 @@ def calculate_life_score(user_id: str, db: Session) -> ScoreResponse:
         avg_star = sum(stars) / max(1, len(stars))
         appliance_score = (avg_star / 5.0) * 15.0
         # LED bonus
-        led_count = sum(a.count for a in household.appliances if a.type == "led_bulb")
         if led_count >= 5:
             appliance_score += 5.0
         else:
@@ -98,7 +138,7 @@ def calculate_life_score(user_id: str, db: Session) -> ScoreResponse:
             score=round(elec_score, 1),
             max_score=35.0,
             percentage=round((elec_score / 35.0) * 100, 1),
-            tip=f"Aapka per person usage {round(per_capita_kwh, 1)} kWh/month hai (benchmark ~45 kWh)."
+            tip=f"M1 ML Model estimated ~{monthly_kwh} kWh/mo. Per person: {round(per_capita_kwh, 1)} kWh (Benchmark: ~45 kWh)."
         ),
         ScoreDriver(
             name="Appliance Efficiency",
@@ -106,7 +146,7 @@ def calculate_life_score(user_id: str, db: Session) -> ScoreResponse:
             score=round(appliance_score, 1),
             max_score=20.0,
             percentage=round((appliance_score / 20.0) * 100, 1),
-            tip="5-star BEE label aur LED bulbs lagane se score badhega."
+            tip=f"{led_count} LED bulbs & star appliances recorded."
         ),
         ScoreDriver(
             name="Peak-Hour Optimization",
@@ -114,7 +154,7 @@ def calculate_life_score(user_id: str, db: Session) -> ScoreResponse:
             score=round(peak_score, 1),
             max_score=15.0,
             percentage=round((peak_score / 15.0) * 100, 1),
-            tip="Sham 6 PM - 10 PM ke beech geyser ya washing machine mat chalayein."
+            tip="Sham 6 PM - 10 PM ke beech heavy geyser/washing loads shift karein."
         ),
         ScoreDriver(
             name="Eco Commute",
@@ -122,7 +162,7 @@ def calculate_life_score(user_id: str, db: Session) -> ScoreResponse:
             score=round(commute_score, 1),
             max_score=10.0,
             percentage=round((commute_score / 10.0) * 100, 1),
-            tip="Bicycle, EV ya metro use karne par 10/10 points."
+            tip="Bicycle, EV ya Ahmedabad BRTS/Metro se maximum points."
         ),
         ScoreDriver(
             name="Waste Segregation",
@@ -142,7 +182,7 @@ def calculate_life_score(user_id: str, db: Session) -> ScoreResponse:
         )
     ]
     
-    # Calculate lifetime/total points from ImpactLedger
+    # Calculate lifetime points from ImpactLedger
     total_points = db.query(ImpactLedger).filter(
         ImpactLedger.user_id == user_id,
         ImpactLedger.reversal_of.is_(None)
@@ -151,11 +191,10 @@ def calculate_life_score(user_id: str, db: Session) -> ScoreResponse:
     
     co2_monthly = monthly_kwh * settings.CEA_GRID_EMISSION_FACTOR
     
-    # Find next best action
     weakest_driver = min(drivers, key=lambda d: d.percentage)
     next_action_map = {
-        "electricity": "AC temperature ko 24°C par set karein (6% bachat).",
-        "appliance": "Purane incandescent bulbs ko 9W LED se replace karein.",
+        "electricity": "AC temperature ko 24°C par set karein (6% per °C bachat).",
+        "appliance": "Purane bulbs ko 9W LED se replace karein.",
         "peak": "Geyser ka time shaam 7 PM se raat 10 PM par shift karein.",
         "commute": "Hafte me 2 din metro ya public transport use karein.",
         "waste": "Ghar par wet kitchen waste composting shuru karein.",
@@ -168,7 +207,7 @@ def calculate_life_score(user_id: str, db: Session) -> ScoreResponse:
         drivers=drivers,
         kwh_month=round(monthly_kwh, 1),
         co2_month=round(co2_monthly, 1),
-        water_month_l=round(members * 135.0 * 30.0, 0), # 135 L/capita/day standard
+        water_month_l=round(members * 135.0 * 30.0, 0),
         next_best_action=next_action,
         level_title=level_title,
         level_icon=level_icon,
