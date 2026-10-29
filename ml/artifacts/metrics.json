@@ -1,0 +1,22 @@
+{
+  "model_type": "GradientBoostingRegressor",
+  "test_mae": 28.83766070610241,
+  "test_r2": 0.9763950628613984,
+  "dataset_size": 10000,
+  "features": [
+    "members",
+    "home_type",
+    "ac_count",
+    "ac_star",
+    "ac_hours",
+    "fridge",
+    "geyser",
+    "geyser_hours",
+    "fans",
+    "led_share",
+    "lights",
+    "washing",
+    "ev",
+    "season"
+  ]
+}
