@@ -1,0 +1,7 @@
+[
+  "daily_mean_kwh",
+  "daily_max_kwh",
+  "peak_hour_share",
+  "variance",
+  "weekend_ratio"
+]
