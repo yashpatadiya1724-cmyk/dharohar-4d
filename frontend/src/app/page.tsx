@@ -19,7 +19,10 @@ import {
   Check,
   AlertCircle,
   ArrowRight,
-  Leaf
+  Leaf,
+  Box,
+  ScanLine,
+  ArrowRightLeft
 } from "lucide-react";
 
 export default function TodayPage() {
@@ -227,6 +230,106 @@ export default function TodayPage() {
           <ArrowRight className="w-3 h-3" />
         </Link>
       </div>
+
+      {/* 2.5 URJATWIN 3D INNOVATIONS SPOTLIGHT */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                UrjaTwin 3D Suite
+              </span>
+              <span className="text-xs text-slate-400">• Award-Winning Innovations</span>
+            </div>
+            <h2 className="text-lg font-black text-slate-900 tracking-tight mt-1">
+              Next-Gen Citizen Engagement Lab
+            </h2>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* Card 1: 3D Solar Raytracer */}
+          <Link
+            href="/solar"
+            className="group relative bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md hover:shadow-xl hover:scale-[1.01] transition-all border border-slate-700/60 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                  <Box className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                  3D WebGL
+                </span>
+              </div>
+              <h3 className="font-bold text-sm text-white group-hover:text-amber-300 transition-colors">
+                Rooftop Solar Raytracer
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                Real-time sun trajectory (6 AM–6 PM), raytraced obstacle shadows, & snap-to-roof panel yield.
+              </p>
+            </div>
+            <div className="mt-4 flex items-center justify-between text-xs font-semibold text-amber-400 pt-2 border-t border-slate-800">
+              <span>Launch Raytracer</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          {/* Card 2: AR Appliance Detective */}
+          <Link
+            href="/detective"
+            className="group relative bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md hover:shadow-xl hover:scale-[1.01] transition-all border border-slate-700/60 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30">
+                  <ScanLine className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] font-bold text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+                  Computer Vision
+                </span>
+              </div>
+              <h3 className="font-bold text-sm text-white group-hover:text-purple-300 transition-colors">
+                AR Appliance Detective
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                Camera HUD scanning rooms to expose vampire power, ₹/hr peak burn rates, & phantom energy leaks.
+              </p>
+            </div>
+            <div className="mt-4 flex items-center justify-between text-xs font-semibold text-purple-400 pt-2 border-t border-slate-800">
+              <span>Open Scanner</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          {/* Card 3: P2P Society Microgrid */}
+          <Link
+            href="/microgrid"
+            className="group relative bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md hover:shadow-xl hover:scale-[1.01] transition-all border border-slate-700/60 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                  <ArrowRightLeft className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  P2P VPP
+                </span>
+              </div>
+              <h3 className="font-bold text-sm text-white group-hover:text-emerald-300 transition-colors">
+                Society Micro-Grid Hub
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                Trade surplus solar with neighbors over 11kV bus. Algorithmic clearing saves buyers 21% & boosts sellers 2.4×.
+              </p>
+            </div>
+            <div className="mt-4 flex items-center justify-between text-xs font-semibold text-emerald-400 pt-2 border-t border-slate-800">
+              <span>Enter Microgrid</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+        </div>
+      </section>
 
       {/* 3. TODAY'S 3 MICRO-ACTIONS */}
       <section className="space-y-3">

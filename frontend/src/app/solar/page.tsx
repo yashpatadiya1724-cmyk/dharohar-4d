@@ -3,10 +3,12 @@
 import React, { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { api } from "@/lib/api";
-import { Sun, IndianRupee, ShieldCheck, ArrowUpRight, CheckCircle2, Info } from "lucide-react";
+import Solar3DRaytracer from "@/components/Solar3DRaytracer";
+import { Sun, IndianRupee, ShieldCheck, ArrowUpRight, CheckCircle2, Info, Box, Calculator } from "lucide-react";
 
 export default function SolarCalculatorPage() {
   const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<"3d" | "calc">("3d");
   const [billRs, setBillRs] = useState<number>(2200);
   const [roofSqm, setRoofSqm] = useState<number>(30);
   const [shading, setShading] = useState<string>("low");
@@ -51,8 +53,40 @@ export default function SolarCalculatorPage() {
         </p>
       </div>
 
-      {/* Input Sliders Card */}
-      <section className="bg-white rounded-3xl p-5 border border-slate-200 shadow-2xs space-y-5">
+      {/* View Switcher Tabs */}
+      <div className="flex bg-slate-200/80 p-1 rounded-2xl max-w-md">
+        <button
+          onClick={() => setActiveTab("3d")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "3d"
+              ? "bg-slate-900 text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Box className="w-4 h-4 text-emerald-400" />
+          <span>3D Rooftop Raytracer</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("calc")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "calc"
+              ? "bg-slate-900 text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Calculator className="w-4 h-4 text-amber-400" />
+          <span>Subsidy & ROI Calculator</span>
+        </button>
+      </div>
+
+      {activeTab === "3d" ? (
+        <div className="space-y-4">
+          <Solar3DRaytracer />
+        </div>
+      ) : (
+        <>
+          {/* Input Sliders Card */}
+          <section className="bg-white rounded-3xl p-5 border border-slate-200 shadow-2xs space-y-5">
         {/* Bill Slider */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -299,6 +333,8 @@ export default function SolarCalculatorPage() {
             <p>{result.assumptions_note}</p>
           </div>
         </section>
+      )}
+        </>
       )}
     </div>
   );

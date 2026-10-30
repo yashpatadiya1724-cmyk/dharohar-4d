@@ -18,6 +18,7 @@ from app.api.v1.places import router as places_router
 from app.api.v1.admin import router as admin_router
 from app.api.v1.meter import router as meter_router
 from app.api.v1.water import router as water_router
+from app.api.v1.microgrid import router as microgrid_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -60,6 +61,7 @@ app.include_router(places_router, prefix=settings.API_V1_STR)
 app.include_router(admin_router, prefix=settings.API_V1_STR)
 app.include_router(meter_router, prefix=settings.API_V1_STR)
 app.include_router(water_router, prefix=settings.API_V1_STR)
+app.include_router(microgrid_router, prefix=settings.API_V1_STR)
 
 @app.get("/healthz", tags=["System"])
 def health_check():

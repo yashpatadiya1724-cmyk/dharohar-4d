@@ -52,10 +52,37 @@ export const Navbar: React.FC = () => {
             <Globe className="w-3 h-3 text-slate-400 absolute right-2 pointer-events-none" />
           </div>
 
+          {/* 3D Solar Raytracer */}
+          <Link
+            href="/solar"
+            className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-1 rounded-lg transition-colors"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+            3D Solar
+          </Link>
+
+          {/* AR Appliance Detective */}
+          <Link
+            href="/detective"
+            className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2 py-1 rounded-lg transition-colors"
+          >
+            <span className="text-[10px] bg-purple-200/80 px-1 rounded text-purple-900 font-bold">AR</span>
+            Detective
+          </Link>
+
+          {/* P2P Microgrid */}
+          <Link
+            href="/microgrid"
+            className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded-lg transition-colors"
+          >
+            <span className="text-[10px] bg-emerald-200/80 px-1 rounded text-emerald-900 font-bold">P2P</span>
+            Microgrid
+          </Link>
+
           {/* Water Tracker Link */}
           <Link
             href="/water"
-            className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded-lg transition-colors"
+            className="hidden lg:inline-flex items-center gap-1 text-xs font-semibold text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded-lg transition-colors"
           >
             Water
           </Link>
@@ -63,7 +90,7 @@ export const Navbar: React.FC = () => {
           {/* Bill OCR Link */}
           <Link
             href="/bill"
-            className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg transition-colors"
+            className="hidden lg:inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg transition-colors"
           >
             Bill OCR
           </Link>
@@ -71,7 +98,7 @@ export const Navbar: React.FC = () => {
           {/* Certificate Report Link */}
           <Link
             href="/report"
-            className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded-lg transition-colors"
+            className="hidden xl:inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded-lg transition-colors"
           >
             Certificate
           </Link>

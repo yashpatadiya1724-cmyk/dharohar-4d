@@ -1,65 +1,56 @@
-# 🎤 LiFE Pulse (HC26-GEDA01) — 2.5-Minute Hackathon Demo Script
+# 🎤 LiFE Pulse & UrjaTwin 3D (HC26-GEDA01) — 3-Minute Hackathon Demo Script
 
 > **Team Presentation Guide for Mission LiFE Hackathon Judges**
-> **Total Time:** 2 Minutes 30 Seconds
+> **Total Time:** 3 Minutes
+> **Theme:** Track 1: Green Energy & Sustainability (GEDA)
 
 ---
 
-### [0:00 – 0:25] The Problem & Vision
-> *"Respected Judges, climate awareness is at an all-time high, but citizens struggle with one simple question: **'Aaj mere ghar ke hisaab se kaunsa ek action sabse zyada bijli aur paisa bachayega?'** At the same time, state agencies like GEDA don't have ward-level granular data on how much energy is being saved by behavioral shifts.*
+### [0:00 – 0:30] Hook: Moving Beyond Boring CRUD Trackers
+> *"Respected Judges, most sustainability apps fail because they are just boring static checklists. Citizens get bored in 2 days, and state agencies get zero actionable data.*
 >
-> *Introducing **LiFE Pulse** — Gujarat's Personal Sustainability Companion and GEDA Live Impact Ledger."*
+> *Today, we present **LiFE Pulse & UrjaTwin 3D** — an interactive citizen engagement and smart energy platform that makes sustainability thrilling through **3D WebGL physics, Augmented Reality Computer Vision, and Peer-to-Peer Society Microgrid Trading**."*
 
 ---
 
-### [0:25 – 0:55] Rapid Onboarding & Transparent LiFE Score
-> *(Screen: Open [http://localhost:3000](http://localhost:3000) or `/onboarding`)*
+### [0:30 – 1:15] Killer Feature 1: UrjaTwin 3D Rooftop Solar Raytracer
+> *(Screen: Navigate to [http://localhost:3000/solar](http://localhost:3000/solar))*
 >
-> *"In under 2 minutes, a citizen like Rina from Satellite Ward, Ahmedabad selects their home type, appliances, and habits. LiFE Pulse calculates a transparent, explainable **LiFE Score from 0 to 100** based on 6 core drivers:*
-> 1. *Electricity Intensity (vs. Gujarat urban benchmark of ~45 kWh/person)*
-> 2. *Appliance Efficiency (Star labels & LED share)*
-> 3. *Peak-Hour Load Optimization*
-> 4. *Eco Commute, Waste Segregation, and Plastic Avoidance.*
+> *"Instead of asking citizens for abstract terrace dimensions, our **UrjaTwin 3D** loads an interactive WebGL 3D digital twin of their building right in the browser!*
 >
-> *No black box — clicking 'How is this calculated' explains the exact math to the user."*
+> *Watch this: As I scrub the diurnal sun slider from 6:30 AM sunrise to solar noon and evening sunset, our mathematical engine calculates the exact azimuth and altitude in Ahmedabad, casting real-time soft raytraced shadows behind water tanks and parapet walls.*
+>
+> *It computes exact usable unshaded terrace area in real time and lets homeowners 1-click snap optimal 23° south-facing monocrystalline solar arrays, showing instant kW output and PM Surya Ghar subsidy payback!"*
 
 ---
 
-### [0:55 – 1:35] Daily Micro-Actions & Peak-Load Shifter
-> *(Screen: Click on Today's Action card, then navigate to `/peak`)*
+### [1:15 – 2:00] Killer Feature 2: AR Appliance Energy Detective
+> *(Screen: Navigate to [http://localhost:3000/detective](http://localhost:3000/detective))*
 >
-> *"Every morning, LiFE Pulse serves **3 personalized micro-actions** selected from our catalog of 60+ Mission LiFE actions. Actions are verified through timer, photo upload, or bill OCR with anti-fraud diminishing returns.*
+> *"Next is our **AR Appliance Energy Detective**. Any citizen can open this on their phone or laptop camera to scan their room.*
 >
-> *Crucially, our **Peak-Load Shifting Engine** analyzes the 6:00 PM to 10:00 PM evening grid peak window. By shifting a 2kW water geyser from 7 PM to 10 PM, a household saves 18 kWh of peak load, earning instant bonus points and relieving grid congestion for Torrent Power and UGVCL."*
+> *Our computer vision reticle identifies power-hungry appliances — from 2kW geysers and inverter ACs to phantom standby electronics. Notice the live cyberpunk HUD: it calculates the exact burn rate in ₹/hr based on Torrent Power's peak tariffs, shows CO₂ emitted per minute, and lets the user commit the optimized schedule into their daily LiFE ledger with one click!"*
 
 ---
 
-### [1:35 – 2:05] 30-Second Rooftop Solar Decision Engine
-> *(Screen: Navigate to `/solar`)*
+### [2:00 – 2:35] Killer Feature 3: P2P Society Micro-Grid Energy Trading Hub
+> *(Screen: Navigate to [http://localhost:3000/microgrid](http://localhost:3000/microgrid))*
 >
-> *"When a citizen wants to explore solar, they don't need complex engineering quotes. In 30 seconds, using Gujarat's solar irradiance of 4.6 kWh/kW/day, our engine estimates:*
-> - *Recommended System Size (e.g. 3 kW for a ₹2,200 monthly bill)*
-> - *Direct **PM Surya Ghar Muft Bijli Yojana** central subsidy (₹78,000)*
-> - *Net investment, annual savings, payback period (3.8 years), and a 25-year cumulative cash flow projection.*
-> - *One-click connection to GEDA-certified installers."*
+> *"Here is the biggest innovation for Gujarat's solar future: **The Society Micro-Grid Hub**.*
+>
+> *In Gujarat, homeowners with solar currently get only ₹2.50/kWh when exporting power back to the grid, while neighbors without solar pay ₹7.50/kWh during peak evening hours!*
+>
+> *Our P2P microgrid engine simulates an entire residential society (like Satellite, Ahmedabad) connected over an 11kV bus. Citizens trade green energy with their neighbors at an automated clearing price of ₹5.95/kWh. Buyers save 21% on their power bills, and solar owners earn 138% more than standard export tariffs — all settled with cryptographic order books and society green tokens!"*
 
 ---
 
-### [2:05 – 2:30] GEDA Municipal Admin Hub & Machine Learning Core
-> *(Screen: Click 'GEDA Admin' in top-right or go to `/admin`)*
+### [2:35 – 3:00] GEDA Municipal Admin Hub & Verified Impact
+> *(Screen: Click 'GEDA' in top-right or go to [http://localhost:3000/admin](http://localhost:3000/admin))*
 >
-> *"For state officials and urban local bodies, the GEDA Admin Hub provides a live municipal heatmap across 6 Ahmedabad wards — Navrangpura, Satellite, Maninagar, Naranpura, Bopal, and Chandkheda — aggregating verified energy savings, avoided CO₂ tonnes, and a photo verification queue.*
+> *"Finally, for GEDA state administrators, our live Municipal Admin Hub shows real-time participation heatmaps across 6 Ahmedabad wards, aggregate MW load relief, smart meter anomaly alerts, and proof review queues.*
 >
-> *Under the hood, LiFE Pulse is powered by our Machine Learning Suite:*
-> - *M1 XGBoost Monthly kWh Estimator with **R² = 0.9764***
-> - *M4 MobileNetV3 Transfer Learning proof classifier*
-> - *M5 Isolation Forest anomaly detector.*
+> *Under the hood, LiFE Pulse is fully production-ready: Next.js 14, FastAPI, Three.js WebGL, XGBoost R² = 0.9764 model inference, full trilingual support (Gujarati, Hindi, English), and offline PWA capability.*
 >
-> *With full trilingual support in Gujarati, Hindi, and English, LiFE Pulse bridges the gap between individual citizen habits and statewide clean energy targets. Thank you!"*
+> *This is Mission LiFE operationalized for real citizens and real impact. Thank you!"*
 
 ---
-
-### 💡 Pro Demo Tips for Judges:
-1. **Show Language Switch:** Toggle from English to **ગુજરાતી** in the navbar to show deep local commitment.
-2. **Show What-If Sliders:** Go to `/simulate` and move the AC slider from 18°C to 24°C to demonstrate real-time dynamic score bump.
-3. **Show Verification:** Complete an action on the Home page to show confetti and ledger entry.
