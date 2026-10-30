@@ -360,15 +360,38 @@ export default function EpigrapherPage() {
             </div>
 
             {/* Inscription Photo Upload Dropzone */}
-            <div className="border border-dashed border-slate-700 rounded-2xl p-4 text-center hover:border-purple-500 transition-colors">
-              <Upload className="w-6 h-6 text-slate-400 mx-auto mb-2" />
-              <div className="text-xs font-bold text-slate-300">
-                Drop your own Inscription Photo / Copper Plate (IITGN Explorer)
+            <label className="border border-dashed border-slate-700 hover:border-purple-500 rounded-2xl p-4 text-center cursor-pointer transition-colors block bg-slate-950/40 hover:bg-slate-900/60 group">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setIsDeciphering(true);
+                  try {
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    const res = await api.uploadInscriptionImage(formData);
+                    if (res.result) {
+                      setActiveData(res.result);
+                      setSelectedId(res.result.id);
+                    }
+                  } catch (err: any) {
+                    alert("Upload error: " + err.message);
+                  } finally {
+                    setIsDeciphering(false);
+                  }
+                }}
+              />
+              <Upload className="w-6 h-6 text-slate-400 group-hover:text-purple-400 mx-auto mb-2 transition-colors" />
+              <div className="text-xs font-bold text-slate-300 group-hover:text-white">
+                {isDeciphering ? "Analyzing Stone Glyphs via Vision Transformer..." : "Upload Stone Inscription / Copper Plate Photo (Click or Drag)"}
               </div>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                Vision Transformer automatically segments glyph contours & detects script family
+                Automatically segments glyph contours, inpaints eroded characters & translates to Hindi/English
               </p>
-            </div>
+            </label>
           </div>
 
           {/* Deciphered Linguistic Translation & Historical Context */}

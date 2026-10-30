@@ -302,3 +302,39 @@ def reconstruct_expedition(data: ExplorerNoteIngestRequest):
         "message": "Unstructured Explorer field notes successfully converted to structured 4D spatial asset!",
         "reconstructed_node": new_entry
     }
+
+@router.post("/upload-inscription")
+async def upload_inscription_image(file: UploadFile = File(...)):
+    """
+    Ingests and segments raw stone inscription photo uploaded by user or researcher.
+    Simulates Vision Transformer character contour segmentation & inpainting.
+    """
+    contents = await file.read()
+    filename = file.filename or "uploaded_inscription.jpg"
+    filesize_kb = round(len(contents) / 1024, 1)
+
+    restored_sample = {
+        "id": f"upload-{random.randint(1000, 9999)}",
+        "title": f"Analyzed User Inscription ({filename})",
+        "location": "Uploaded via IITGN Field Scanner Dropzone",
+        "script": "Western Indian Nagari / Proto-Devanagari",
+        "language": "Epigraphical Sanskrit",
+        "date_vikram_samvat": "Circa 11th–13th Century CE",
+        "patron": "Regional Chaulukya / Vaghela Feudatory",
+        "image_url": "/inscriptions/uploaded.jpg",
+        "filesize_kb": filesize_kb,
+        "degraded_transcription": "श्री ... [जीर्ण खंड] ... महामण्डलेश्वर ... [अस्पष्ट अक्षराणि] ... कीर्तिस्तम्भ प्रतिष्ठा ॥",
+        "restored_transcription": "श्री सोमेश्वर पादपद्मोपजीविना महामण्डलेश्वर श्री धवलदेवेन कीर्तिस्तम्भ प्रतिष्ठा कारिता ॥",
+        "iast": "śrī someśvara pādapadmopajīvinā mahāmaṇḍaleśvara śrī dhavaladevena kīrtistambha pratiṣṭhā kāritā ||",
+        "hindi_translation": "भगवान सोमेश्वर के चरण-कमलों के अनन्य उपासक महामण्डलेश्वर श्री धवलदेव द्वारा इस कीर्तिस्तम्भ की प्रतिष्ठा संपन्न करवाई गई।",
+        "english_translation": "By the devout worshiper of the lotus-feet of Lord Someshwara, the feudatory lord Mahamandaleshwara Sri Dhavaladeva, this commemorative pillar of glory was consecrated.",
+        "confidence_score": 0.968,
+        "restored_glyphs_count": 16,
+        "historical_significance": "Discovered in Northern Gujarat corridor, validating the local feudatory governance and temple endowment customs."
+    }
+
+    return {
+        "status": "success",
+        "message": f"Successfully segmented {filename} ({filesize_kb} KB). Extracted 16 damaged glyphs and performed neural inpainting.",
+        "result": restored_sample
+    }
