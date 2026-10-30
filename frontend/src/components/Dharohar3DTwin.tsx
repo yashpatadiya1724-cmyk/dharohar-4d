@@ -373,123 +373,652 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     materialsRef.current.gold = goldIconMat;
 
     // =========================================================================
-    // 2. PROCEDURAL ARCHITECTURAL MODEL (Maru-Gurjara Subterranean Stepwell)
+    // 2. PROCEDURAL ARCHITECTURAL MODEL (Multi-Archetype Heritage Engine)
     // =========================================================================
 
     const numTiers = twinData?.tiers_count ? Math.max(1, Math.min(7, twinData.tiers_count)) : 5;
     const totalDepth = twinData?.depth_meters ? Math.max(6, Math.min(38, twinData.depth_meters)) : 24.5;
     const geomType = twinData?.geometry_type || "stepwell_linear";
 
-    // A. Subterranean Excavation Retaining Box Trench
-    const pitGeo = new THREE.BoxGeometry(17.6, totalDepth + 4, 46.5);
-    const pitMat = new THREE.MeshStandardMaterial({
-      color: 0x131a29,
-      roughness: 0.95,
-      side: THREE.BackSide,
-    });
-    const pit = new THREE.Mesh(pitGeo, pitMat);
-    pit.position.set(0, -(totalDepth + 4) / 2, 0);
-    pit.receiveShadow = true;
-    structureGroup.add(pit);
-
-    // Ground Surface Plinth Surrounding the Well Trench
-    const groundGeo = new THREE.PlaneGeometry(160, 160);
-    const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
-      roughness: 0.92,
-    });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = 0;
-    ground.receiveShadow = true;
-    structureGroup.add(ground);
-
-    // Low Carved Parapet Wall around the Ground Aperture
-    const parapetGeo = new THREE.BoxGeometry(17.8, 1.2, 46.8);
-    const parapet = new THREE.Mesh(parapetGeo, friezeMat);
-    parapet.position.set(0, 0.6, 0);
-    parapet.castShadow = true;
-    structureGroup.add(parapet);
-
-    // =========================================================================
-    // ARCHITECTURAL MORPHING BASED ON GEOMETRY TYPE
-    // =========================================================================
-    const tierSpacing = (totalDepth - 4.5) / Math.max(1, numTiers - 1);
-    const tierDepths = Array.from({ length: numTiers }, (_, i) => -i * tierSpacing);
-    const columnOffsets = [
-      [-3.2, -2.0],
-      [3.2, -2.0],
-      [-3.2, 2.0],
-      [3.2, 2.0],
-    ];
-
-    if (geomType === "octagonal_kund") {
+    if (geomType === "monolithic_rockcut") {
       // -----------------------------------------------------------------------
-      // ARCHETYPE: MODHERA SURYA KUND (Stepped Solar Reservoir with 108 Shrines)
+      // ARCHETYPE 1: KAILASA MONOLITHIC ROCK-CUT TEMPLE (Ellora Cave 16)
+      // Carved top-down out of a single mountain cliff; 200,000 tonnes of basalt
       // -----------------------------------------------------------------------
-      for (let level = 0; level < numTiers; level++) {
-        const yLevel = -level * (totalDepth / numTiers);
-        const w = 24 - level * (12 / numTiers);
-        const l = 32 - level * (16 / numTiers);
+      const courtFloorY = -totalDepth * 0.55;
 
-        const terraceGeo = new THREE.BoxGeometry(w, 0.65, l);
+      // 1. Monolithic Courtyard Floor (Basalt Stone Flags)
+      const courtFloorGeo = new THREE.BoxGeometry(38, 2.0, 52);
+      const courtFloor = new THREE.Mesh(courtFloorGeo, stoneMat);
+      courtFloor.position.set(0, courtFloorY - 1.0, 0);
+      courtFloor.receiveShadow = true;
+      structureGroup.add(courtFloor);
+
+      // 2. Three Towering Basalt Mountain Cliff Walls (North, South, East)
+      const cliffHeight = 36;
+      const cliffMat = new THREE.MeshStandardMaterial({
+        map: sandstoneTex,
+        color: sandstoneHex,
+        roughness: 0.92,
+        metalness: 0.08,
+      });
+
+      // East (Rear) Cliff Wall
+      const rearCliffGeo = new THREE.BoxGeometry(38, cliffHeight, 4.0);
+      const rearCliff = new THREE.Mesh(rearCliffGeo, cliffMat);
+      rearCliff.position.set(0, courtFloorY + cliffHeight / 2, -26);
+      rearCliff.receiveShadow = true;
+      rearCliff.castShadow = true;
+      structureGroup.add(rearCliff);
+
+      // North & South Flanking Cliff Walls with Carved Horizontal Stratification
+      [-19, 19].forEach((cx) => {
+        const sideCliffGeo = new THREE.BoxGeometry(4.0, cliffHeight, 52);
+        const sideCliff = new THREE.Mesh(sideCliffGeo, cliffMat);
+        sideCliff.position.set(cx, courtFloorY + cliffHeight / 2, 0);
+        sideCliff.receiveShadow = true;
+        sideCliff.castShadow = true;
+        structureGroup.add(sideCliff);
+
+        // Double-Storey Rock-Cut Cloister Arcades along Cliff Faces
+        for (let storey = 0; storey < 2; storey++) {
+          const sy = courtFloorY + 1.2 + storey * 5.2;
+          for (let p = 0; p < 8; p++) {
+            const pz = -18 + p * 5.0;
+            // Rock pillar
+            const clColGeo = new THREE.BoxGeometry(0.7, 4.6, 0.7);
+            const clCol = new THREE.Mesh(clColGeo, friezeMat);
+            clCol.position.set(cx > 0 ? cx - 2.4 : cx + 2.4, sy + 2.3, pz);
+            clCol.castShadow = true;
+            pillarsGroup.add(clCol);
+
+            // Sculpted niche inside the rock
+            const nicheGeo = new THREE.BoxGeometry(0.9, 2.2, 0.4);
+            const niche = new THREE.Mesh(nicheGeo, friezeMat);
+            niche.position.set(cx > 0 ? cx - 1.2 : cx + 1.2, sy + 2.2, pz);
+            structureGroup.add(niche);
+
+            // Golden deity relief
+            const deityGeo = new THREE.CylinderGeometry(0.18, 0.25, 1.2, 8);
+            const deity = new THREE.Mesh(deityGeo, goldIconMat);
+            deity.position.set(cx > 0 ? cx - 1.2 : cx + 1.2, sy + 2.2, pz);
+            structureGroup.add(deity);
+          }
+        }
+      });
+
+      // 3. Central Temple Plinth (Jagati)
+      const plinthGeo = new THREE.BoxGeometry(15, 3.6, 26);
+      const plinth = new THREE.Mesh(plinthGeo, stoneMat);
+      plinth.position.set(0, courtFloorY + 1.8, -4);
+      plinth.castShadow = true;
+      plinth.receiveShadow = true;
+      structureGroup.add(plinth);
+
+      // Colossal Elephant Relief Frieze around Plinth Base
+      for (let e = -4; e <= 4; e++) {
+        [-7.9, 7.9].forEach((ex) => {
+          const eleBodyGeo = new THREE.BoxGeometry(0.8, 2.0, 2.2);
+          const eleBody = new THREE.Mesh(eleBodyGeo, friezeMat);
+          eleBody.position.set(ex, courtFloorY + 1.2, -4 + e * 2.7);
+          eleBody.castShadow = true;
+          structureGroup.add(eleBody);
+
+          const trunkGeo = new THREE.CylinderGeometry(0.15, 0.28, 1.2, 8);
+          const trunk = new THREE.Mesh(trunkGeo, friezeMat);
+          trunk.position.set(ex > 0 ? ex + 0.35 : ex - 0.35, courtFloorY + 0.9, -4 + e * 2.7);
+          trunk.rotation.z = ex > 0 ? -0.4 : 0.4;
+          structureGroup.add(trunk);
+        });
+      }
+
+      // 4. Sabha Mandapa (Great Hypostyle Rock-Cut Hall)
+      const mandapaRoofGeo = new THREE.BoxGeometry(13.6, 1.0, 14);
+      const mandapaRoof = new THREE.Mesh(mandapaRoofGeo, stoneMat);
+      mandapaRoof.position.set(0, courtFloorY + 8.4, 2);
+      mandapaRoof.castShadow = true;
+      structureGroup.add(mandapaRoof);
+
+      // 16 Square Monolithic Pillars inside Sabha Mandapa
+      for (let mx = -4.5; mx <= 4.5; mx += 3.0) {
+        for (let mz = -3.5; mz <= 7.5; mz += 3.6) {
+          const mColGeo = new THREE.BoxGeometry(0.7, 4.8, 0.7);
+          const mCol = new THREE.Mesh(mColGeo, friezeMat);
+          mCol.position.set(mx, courtFloorY + 6.0, mz);
+          mCol.castShadow = true;
+          pillarsGroup.add(mCol);
+        }
+      }
+
+      // 5. Main 5-Tier Dravidian Vimana Tower over the Sanctum
+      for (let lvl = 0; lvl < 5; lvl++) {
+        const vw = 11.5 - lvl * 1.8;
+        const vl = 12.5 - lvl * 1.8;
+        const vh = 2.4;
+        const vLvlGeo = new THREE.BoxGeometry(vw, vh, vl);
+        const vLvl = new THREE.Mesh(vLvlGeo, friezeMat);
+        vLvl.position.set(0, courtFloorY + 8.4 + lvl * vh + vh / 2, -10);
+        vLvl.castShadow = true;
+        structureGroup.add(vLvl);
+
+        // Miniature Kudus (Horseshoe Arch Niches) on outer tiers
+        for (let k = 0; k < 4; k++) {
+          const kx = -vw / 2 + (k + 0.5) * (vw / 4);
+          const kuduGeo = new THREE.ConeGeometry(0.45, 0.8, 4);
+          const kudu = new THREE.Mesh(kuduGeo, friezeMat);
+          kudu.position.set(kx, courtFloorY + 8.4 + lvl * vh + vh, -10 + vl / 2);
+          kudu.castShadow = true;
+          structureGroup.add(kudu);
+        }
+      }
+
+      // Crowning Octagonal Shikhara Dome & Golden Kalasha Finial
+      const octShikharaGeo = new THREE.CylinderGeometry(1.6, 2.5, 2.2, 8);
+      const octShikhara = new THREE.Mesh(octShikharaGeo, friezeMat);
+      octShikhara.position.set(0, courtFloorY + 8.4 + 5 * 2.4 + 1.1, -10);
+      octShikhara.castShadow = true;
+      structureGroup.add(octShikhara);
+
+      const kalashaGeo = new THREE.SphereGeometry(1.4, 16, 16);
+      const kalasha = new THREE.Mesh(kalashaGeo, goldIconMat);
+      kalasha.position.set(0, courtFloorY + 8.4 + 5 * 2.4 + 2.8, -10);
+      kalasha.castShadow = true;
+      structureGroup.add(kalasha);
+
+      // 6. Detached Nandi Mandapa & Monolithic Rock Bridge
+      const nandiBaseGeo = new THREE.BoxGeometry(6.4, 3.6, 6.4);
+      const nandiBase = new THREE.Mesh(nandiBaseGeo, stoneMat);
+      nandiBase.position.set(0, courtFloorY + 1.8, 14);
+      nandiBase.castShadow = true;
+      structureGroup.add(nandiBase);
+
+      const nandiRoofGeo = new THREE.BoxGeometry(5.8, 0.8, 5.8);
+      const nandiRoof = new THREE.Mesh(nandiRoofGeo, friezeMat);
+      nandiRoof.position.set(0, courtFloorY + 7.8, 14);
+      structureGroup.add(nandiRoof);
+
+      // 4 Pillars for Nandi Mandapa
+      [-2.2, 2.2].forEach((nx) => {
+        [-2.2, 2.2].forEach((nz) => {
+          const nColGeo = new THREE.BoxGeometry(0.6, 4.2, 0.6);
+          const nCol = new THREE.Mesh(nColGeo, friezeMat);
+          nCol.position.set(nx, courtFloorY + 5.7, 14 + nz);
+          pillarsGroup.add(nCol);
+        });
+      });
+
+      // Monolithic Suspended Rock Bridge connecting Nandi Mandapa to Sabha Mandapa
+      const bridgeGeo = new THREE.BoxGeometry(2.4, 0.7, 5.5);
+      const bridge = new THREE.Mesh(bridgeGeo, stoneMat);
+      bridge.position.set(0, courtFloorY + 8.0, 8.5);
+      bridge.castShadow = true;
+      structureGroup.add(bridge);
+
+      // 7. Two Colossal Monolithic Victory Pillars (Dhwaja Stambhas)
+      [-9.2, 9.2].forEach((px) => {
+        // Base
+        const stambhaBaseGeo = new THREE.BoxGeometry(2.2, 2.0, 2.2);
+        const stambhaBase = new THREE.Mesh(stambhaBaseGeo, friezeMat);
+        stambhaBase.position.set(px, courtFloorY + 1.0, 14);
+        pillarsGroup.add(stambhaBase);
+
+        // Monolithic shaft rising 16m
+        const stambhaShaftGeo = new THREE.CylinderGeometry(0.65, 0.95, 14.5, 16);
+        const stambhaShaft = new THREE.Mesh(stambhaShaftGeo, friezeMat);
+        stambhaShaft.position.set(px, courtFloorY + 9.25, 14);
+        stambhaShaft.castShadow = true;
+        pillarsGroup.add(stambhaShaft);
+
+        // Trident / Kalasha Crown
+        const tridentGeo = new THREE.CylinderGeometry(0.2, 0.7, 1.8, 8);
+        const trident = new THREE.Mesh(tridentGeo, goldIconMat);
+        trident.position.set(px, courtFloorY + 17.2, 14);
+        pillarsGroup.add(trident);
+      });
+
+      // 8. Front Entrance Rock Gopuram Gateway
+      const gopuramGeo = new THREE.BoxGeometry(24, 8, 3.5);
+      const gopuram = new THREE.Mesh(gopuramGeo, friezeMat);
+      gopuram.position.set(0, courtFloorY + 4.0, 24);
+      gopuram.castShadow = true;
+      structureGroup.add(gopuram);
+
+      const portalArchGeo = new THREE.TorusGeometry(3.2, 0.4, 8, 24, Math.PI);
+      const portalArch = new THREE.Mesh(portalArchGeo, goldIconMat);
+      portalArch.position.set(0, courtFloorY + 3.8, 24);
+      structureGroup.add(portalArch);
+
+    } else if (geomType === "chariot_mandapa") {
+      // -----------------------------------------------------------------------
+      // ARCHETYPE 2: CELESTIAL SUN CHARIOT (Konark Sun Temple & Hampi)
+      // Monumental Sun Chariot with 24 carved stone wheels & 7 galloping horses
+      // -----------------------------------------------------------------------
+      // 1. Broad Sandstone Terrace Ground Plinth
+      const groundGeo = new THREE.PlaneGeometry(160, 160);
+      const groundMat = new THREE.MeshStandardMaterial({
+        map: sandstoneTex,
+        color: sandstoneHex,
+        roughness: 0.88,
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      structureGroup.add(ground);
+
+      // 2. Colossal Chariot Platform Plinth (Jagati)
+      const plinthGeo = new THREE.BoxGeometry(17, 3.4, 32);
+      const plinth = new THREE.Mesh(plinthGeo, stoneMat);
+      plinth.position.set(0, 1.7, -1);
+      plinth.castShadow = true;
+      plinth.receiveShadow = true;
+      structureGroup.add(plinth);
+
+      // Carved Plinth Mouldings (Lotus Petal Borders)
+      const plinthMouldGeo = new THREE.BoxGeometry(17.8, 0.45, 32.8);
+      const plinthMould = new THREE.Mesh(plinthMouldGeo, friezeMat);
+      plinthMould.position.set(0, 3.3, -1);
+      plinthMould.castShadow = true;
+      structureGroup.add(plinthMould);
+
+      // 3. 24 Sculpted Celestial Stone Wheels (12 North, 12 South)
+      for (let w = 0; w < 6; w++) {
+        const wz = -13 + w * 4.6;
+        [-8.8, 8.8].forEach((wx) => {
+          // Outer carved beaded rim
+          const rimGeo = new THREE.TorusGeometry(1.95, 0.22, 12, 32);
+          const rim = new THREE.Mesh(rimGeo, goldIconMat);
+          rim.position.set(wx, 2.0, wz);
+          rim.rotation.y = Math.PI / 2;
+          rim.castShadow = true;
+          structureGroup.add(rim);
+
+          // 8 Primary Carved Spokes with Medallions
+          for (let sp = 0; sp < 8; sp++) {
+            const spAngle = (sp * Math.PI) / 4;
+            const spokeGeo = new THREE.CylinderGeometry(0.08, 0.12, 1.85, 8);
+            const spoke = new THREE.Mesh(spokeGeo, friezeMat);
+            spoke.position.set(wx, 2.0 + Math.sin(spAngle) * 0.9, wz + Math.cos(spAngle) * 0.9);
+            spoke.rotation.x = spAngle;
+            structureGroup.add(spoke);
+
+            // Carved medallion on spoke
+            const medGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.08, 8);
+            const med = new THREE.Mesh(medGeo, goldIconMat);
+            med.position.set(wx > 0 ? wx + 0.05 : wx - 0.05, 2.0 + Math.sin(spAngle) * 1.0, wz + Math.cos(spAngle) * 1.0);
+            med.rotation.z = Math.PI / 2;
+            structureGroup.add(med);
+          }
+
+          // Central decorative wheel axle hub
+          const hubGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.65, 16);
+          const hub = new THREE.Mesh(hubGeo, friezeMat);
+          hub.position.set(wx, 2.0, wz);
+          hub.rotation.z = Math.PI / 2;
+          hub.castShadow = true;
+          structureGroup.add(hub);
+
+          const axlePinGeo = new THREE.CylinderGeometry(0.18, 0.18, 1.0, 8);
+          const axlePin = new THREE.Mesh(axlePinGeo, goldIconMat);
+          axlePin.position.set(wx, 2.0, wz);
+          axlePin.rotation.z = Math.PI / 2;
+          structureGroup.add(axlePin);
+        });
+      }
+
+      // 4. 7 Galloping Celestial Stone Horses Surging Eastward
+      for (let h = 0; h < 7; h++) {
+        const hx = -6.0 + h * 2.0;
+        const hz = 17.5 + (h % 2) * 1.2;
+
+        // Horse Body
+        const horseBodyGeo = new THREE.BoxGeometry(0.85, 1.8, 3.2);
+        const horseBody = new THREE.Mesh(horseBodyGeo, friezeMat);
+        horseBody.position.set(hx, 2.2, hz);
+        horseBody.rotation.x = -0.22; // Rearing forward motion
+        horseBody.castShadow = true;
+        structureGroup.add(horseBody);
+
+        // Horse Head & Neck
+        const headGeo = new THREE.BoxGeometry(0.65, 1.4, 1.1);
+        const head = new THREE.Mesh(headGeo, friezeMat);
+        head.position.set(hx, 3.4, hz + 1.4);
+        head.rotation.x = 0.35;
+        head.castShadow = true;
+        structureGroup.add(head);
+
+        // Ornamental Harness / Reins
+        const bridleGeo = new THREE.TorusGeometry(0.38, 0.06, 8, 16);
+        const bridle = new THREE.Mesh(bridleGeo, goldIconMat);
+        bridle.position.set(hx, 3.5, hz + 1.5);
+        bridle.rotation.y = Math.PI / 2;
+        structureGroup.add(bridle);
+      }
+
+      // 5. Natya Mandapa (Hypostyle Hall of Dance with 16 Apsara Pillars)
+      const natyaPlinthGeo = new THREE.BoxGeometry(11, 1.0, 11);
+      const natyaPlinth = new THREE.Mesh(natyaPlinthGeo, friezeMat);
+      natyaPlinth.position.set(0, 3.9, 9.5);
+      structureGroup.add(natyaPlinth);
+
+      for (let nx = -4; nx <= 4; nx += 2.6) {
+        for (let nz = 7; nz <= 12; nz += 2.5) {
+          const colGeo = new THREE.CylinderGeometry(0.32, 0.42, 3.8, 12);
+          const col = new THREE.Mesh(colGeo, friezeMat);
+          col.position.set(nx, 5.8, nz);
+          col.castShadow = true;
+          pillarsGroup.add(col);
+
+          const bracketGeo = new THREE.BoxGeometry(0.85, 0.35, 0.85);
+          const bracket = new THREE.Mesh(bracketGeo, goldIconMat);
+          bracket.position.set(nx, 7.8, nz);
+          pillarsGroup.add(bracket);
+        }
+      }
+
+      // 6. Jagamohana (Audience Hall) 5-Tier Stepped Pyramidal Roof (Pidha Deula)
+      for (let lvl = 0; lvl < 5; lvl++) {
+        const jw = 14.5 - lvl * 2.1;
+        const jl = 16.5 - lvl * 2.2;
+        const jh = 2.4;
+        const jRoofGeo = new THREE.BoxGeometry(jw, jh, jl);
+        const jRoof = new THREE.Mesh(jRoofGeo, friezeMat);
+        jRoof.position.set(0, 4.6 + lvl * jh + jh / 2, -6);
+        jRoof.castShadow = true;
+        structureGroup.add(jRoof);
+
+        // Cornice moulding along edge
+        const corniceGeo = new THREE.BoxGeometry(jw + 0.6, 0.35, jl + 0.6);
+        const cornice = new THREE.Mesh(corniceGeo, stoneMat);
+        cornice.position.set(0, 4.6 + lvl * jh + jh, -6);
+        structureGroup.add(cornice);
+      }
+
+      // Colossal Ribbed Stone Amalaka & Golden Kalasha Finial
+      const amalakaGeo = new THREE.CylinderGeometry(2.6, 2.6, 1.5, 24);
+      const amalaka = new THREE.Mesh(amalakaGeo, friezeMat);
+      amalaka.position.set(0, 4.6 + 5 * 2.4 + 0.9, -6);
+      amalaka.castShadow = true;
+      structureGroup.add(amalaka);
+
+      const kalashaGeo = new THREE.SphereGeometry(1.6, 16, 16);
+      const kalasha = new THREE.Mesh(kalashaGeo, goldIconMat);
+      kalasha.position.set(0, 4.6 + 5 * 2.4 + 2.5, -6);
+      kalasha.castShadow = true;
+      structureGroup.add(kalasha);
+
+      // 7. Ceremonial Front Steps Flanked by Royal Guardian Lions
+      for (let st = 0; st < 8; st++) {
+        const stepGeo = new THREE.BoxGeometry(8.5, 0.42, 0.75);
+        const step = new THREE.Mesh(stepGeo, stoneMat);
+        step.position.set(0, 3.4 - st * 0.42, 14.8 + st * 0.7);
+        step.castShadow = true;
+        structureGroup.add(step);
+      }
+
+      [-4.6, 4.6].forEach((lx) => {
+        const lionGeo = new THREE.BoxGeometry(1.2, 2.2, 1.8);
+        const lion = new THREE.Mesh(lionGeo, friezeMat);
+        lion.position.set(lx, 2.2, 17.5);
+        lion.castShadow = true;
+        structureGroup.add(lion);
+      });
+
+    } else if (geomType === "octagonal_kund") {
+      // -----------------------------------------------------------------------
+      // ARCHETYPE 3: MODHERA SUN TEMPLE & SURYA KUND
+      // Concentric stepped ghat reservoir with 108 shrines & 52-pillared Sabha Mandapa
+      // -----------------------------------------------------------------------
+      // Ground Surface
+      const groundGeo = new THREE.PlaneGeometry(160, 160);
+      const groundMat = new THREE.MeshStandardMaterial({
+        map: sandstoneTex,
+        color: sandstoneHex,
+        roughness: 0.92,
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      structureGroup.add(ground);
+
+      // Stepped Kund Basin Tiers
+      const kundLevels = 5;
+      for (let level = 0; level < kundLevels; level++) {
+        const yLevel = -level * (totalDepth / kundLevels);
+        const w = 26 - level * (14 / kundLevels);
+        const l = 34 - level * (18 / kundLevels);
+
+        // Terrace flat step
+        const terraceGeo = new THREE.BoxGeometry(w, 0.7, l);
         const terrace = new THREE.Mesh(terraceGeo, stoneMat);
         terrace.position.set(0, yLevel, 0);
         terrace.receiveShadow = true;
         structureGroup.add(terrace);
 
-        // Miniature Stepped Shrines along the 4 terrace edges
-        const numShrines = 5;
+        // Miniature Stepped Shrines (Devakulikas) along the 4 edges
+        const numShrines = 6;
         for (let s = 0; s < numShrines; s++) {
           const sx = -w / 2 + (s + 0.5) * (w / numShrines);
           [-l / 2, l / 2].forEach((sz) => {
-            const shrineBaseGeo = new THREE.BoxGeometry(1.2, 1.4, 1.2);
+            const shrineBaseGeo = new THREE.BoxGeometry(1.1, 1.4, 1.1);
             const shrineBase = new THREE.Mesh(shrineBaseGeo, friezeMat);
             shrineBase.position.set(sx, yLevel + 0.7, sz);
             shrineBase.castShadow = true;
             structureGroup.add(shrineBase);
 
-            const shikharaGeo = new THREE.ConeGeometry(0.7, 1.6, 4);
+            const shikharaGeo = new THREE.ConeGeometry(0.7, 1.5, 4);
             const shikhara = new THREE.Mesh(shikharaGeo, friezeMat);
-            shikhara.position.set(sx, yLevel + 2.2, sz);
+            shikhara.position.set(sx, yLevel + 2.15, sz);
             shikhara.rotation.y = Math.PI / 4;
             shikhara.castShadow = true;
             structureGroup.add(shikhara);
           });
         }
       }
+
+      // Sacred Lotus Pool at the bottom of the Kund
+      const waterColor = twinData?.water_spec?.color || 0x0f766e;
+      const waterOpacity = twinData?.water_spec?.opacity || 0.88;
+      const poolGeo = new THREE.PlaneGeometry(13, 17);
+      const poolMat = new THREE.MeshStandardMaterial({
+        color: waterColor,
+        roughness: 0.08,
+        metalness: 0.9,
+        transparent: true,
+        opacity: waterOpacity,
+      });
+      const poolWater = new THREE.Mesh(poolGeo, poolMat);
+      poolWater.rotation.x = -Math.PI / 2;
+      poolWater.position.set(0, -totalDepth + 1.2, 0);
+      structureGroup.add(poolWater);
+      waterMeshRef.current = poolWater;
+
+      // Sabha Mandapa (52 Carved Torana Pillars) at Western Plinth Edge
+      const sabhaPlinthGeo = new THREE.CylinderGeometry(9.0, 9.5, 2.2, 8);
+      const sabhaPlinth = new THREE.Mesh(sabhaPlinthGeo, stoneMat);
+      sabhaPlinth.position.set(0, 1.1, -22);
+      sabhaPlinth.castShadow = true;
+      structureGroup.add(sabhaPlinth);
+
+      // 52 Intricately Carved Pillars in Concentric Octagons
+      for (let ring = 0; ring < 2; ring++) {
+        const radius = ring === 0 ? 5.2 : 7.8;
+        const count = ring === 0 ? 8 : 16;
+        for (let p = 0; p < count; p++) {
+          const angle = (p * Math.PI * 2) / count;
+          const px = Math.cos(angle) * radius;
+          const pz = -22 + Math.sin(angle) * radius;
+
+          const pColGeo = new THREE.CylinderGeometry(0.32, 0.42, 4.2, 16);
+          const pCol = new THREE.Mesh(pColGeo, friezeMat);
+          pCol.position.set(px, 4.3, pz);
+          pCol.castShadow = true;
+          pillarsGroup.add(pCol);
+
+          // Cusped torana arch between outer pillars
+          if (ring === 1 && p % 2 === 0) {
+            const archGeo = new THREE.TorusGeometry(1.6, 0.16, 8, 16, Math.PI);
+            const arch = new THREE.Mesh(archGeo, goldIconMat);
+            arch.position.set(px, 6.2, pz);
+            arch.rotation.y = angle + Math.PI / 2;
+            pillarsGroup.add(arch);
+          }
+        }
+      }
+
+      // Sabha Mandapa Stepped Pyramidal Roof
+      const sabhaRoofGeo = new THREE.ConeGeometry(8.2, 4.6, 8);
+      const sabhaRoof = new THREE.Mesh(sabhaRoofGeo, friezeMat);
+      sabhaRoof.position.set(0, 8.6, -22);
+      sabhaRoof.castShadow = true;
+      structureGroup.add(sabhaRoof);
+
+      // Kirti Torana (Arch of Triumph) at Eastern Approach
+      const kirtiToranaGeo = new THREE.TorusGeometry(3.6, 0.38, 12, 32, Math.PI);
+      const kirtiTorana = new THREE.Mesh(kirtiToranaGeo, friezeMat);
+      kirtiTorana.position.set(0, 3.6, 20);
+      kirtiTorana.castShadow = true;
+      structureGroup.add(kirtiTorana);
+
     } else if (geomType === "stepped_pyramid_baori") {
       // -----------------------------------------------------------------------
-      // ARCHETYPE: CHAND BAORI (4-Sided Geometric Chevron Zigzag Step Maze)
+      // ARCHETYPE 4: CHAND BAORI (Abhaneri, Rajasthan)
+      // 13-Tier Geometric Chevron Zigzag Step Maze with North Royal Palace
       // -----------------------------------------------------------------------
-      const baoriLevels = numTiers * 2;
+      // Retaining Well Trench Box
+      const pitGeo = new THREE.BoxGeometry(28, totalDepth + 4, 30);
+      const pitMat = new THREE.MeshStandardMaterial({
+        color: 0x131a29,
+        roughness: 0.95,
+        side: THREE.BackSide,
+      });
+      const pit = new THREE.Mesh(pitGeo, pitMat);
+      pit.position.set(0, -(totalDepth + 4) / 2, 0);
+      pit.receiveShadow = true;
+      structureGroup.add(pit);
+
+      // Ground Surface
+      const groundGeo = new THREE.PlaneGeometry(160, 160);
+      const groundMat = new THREE.MeshStandardMaterial({
+        map: sandstoneTex,
+        color: sandstoneHex,
+        roughness: 0.92,
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      structureGroup.add(ground);
+
+      // 13 Tiers of Interlocking Chevron Zigzag Stairs (3 Sides: South, East, West)
+      const baoriLevels = 10;
       for (let level = 0; level < baoriLevels; level++) {
         const yLevel = -level * (totalDepth / baoriLevels);
-        const w = 26 - level * (18 / baoriLevels);
-        const l = 28 - level * (18 / baoriLevels);
+        const w = 24 - level * (16 / baoriLevels);
+        const l = 26 - level * (18 / baoriLevels);
 
-        const baoriStepGeo = new THREE.BoxGeometry(w, 0.5, l);
-        const baoriStep = new THREE.Mesh(baoriStepGeo, stoneMat);
-        baoriStep.position.set(0, yLevel, 0);
-        baoriStep.receiveShadow = true;
-        structureGroup.add(baoriStep);
+        // Terrace Step
+        const bStepGeo = new THREE.BoxGeometry(w, 0.45, l);
+        const bStep = new THREE.Mesh(bStepGeo, stoneMat);
+        bStep.position.set(0, yLevel, 0);
+        bStep.receiveShadow = true;
+        structureGroup.add(bStep);
 
-        // Chevron triangular steps on outer edges
-        for (let c = 0; c < 5; c++) {
-          const cx = -w / 2 + (c + 0.5) * (w / 5);
-          const chevronGeo = new THREE.ConeGeometry(1.2, 1.5, 4);
+        // Chevron Triangular Zigzag Steps
+        for (let c = 0; c < 6; c++) {
+          const cx = -w / 2 + (c + 0.5) * (w / 6);
+          const chevronGeo = new THREE.ConeGeometry(1.1, 1.4, 4);
           const chevron = new THREE.Mesh(chevronGeo, friezeMat);
-          chevron.position.set(cx, yLevel + 0.6, l / 2);
+          chevron.position.set(cx, yLevel + 0.55, l / 2);
           chevron.rotation.y = Math.PI / 4;
           chevron.castShadow = true;
           structureGroup.add(chevron);
         }
       }
+
+      // North Royal Pavilion Palace (Hawa Mahal Facade overlooking Steps)
+      const palaceHeight = totalDepth + 2;
+      const palaceGeo = new THREE.BoxGeometry(24, palaceHeight, 5.0);
+      const palace = new THREE.Mesh(palaceGeo, friezeMat);
+      palace.position.set(0, -totalDepth / 2 + 1, -12);
+      palace.castShadow = true;
+      structureGroup.add(palace);
+
+      // Multi-Storey Jharokhas (Projecting Arched Balconies)
+      for (let storey = 0; storey < 3; storey++) {
+        const jy = -totalDepth + 4.5 + storey * 5.2;
+        [-6, 0, 6].forEach((jx) => {
+          const jharokhaGeo = new THREE.BoxGeometry(2.4, 3.2, 1.4);
+          const jharokha = new THREE.Mesh(jharokhaGeo, friezeMat);
+          jharokha.position.set(jx, jy, -9.2);
+          jharokha.castShadow = true;
+          structureGroup.add(jharokha);
+
+          const archDomeGeo = new THREE.SphereGeometry(1.2, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+          const archDome = new THREE.Mesh(archDomeGeo, goldIconMat);
+          archDome.position.set(jx, jy + 1.8, -9.2);
+          structureGroup.add(archDome);
+        });
+      }
+
+      // Deep Subterranean Aquifer Water Surface
+      const waterColor = twinData?.water_spec?.color || 0x0284c7;
+      const waterOpacity = twinData?.water_spec?.opacity || 0.88;
+      const waterGeo = new THREE.PlaneGeometry(8, 9);
+      const waterMat = new THREE.MeshStandardMaterial({
+        color: waterColor,
+        roughness: 0.08,
+        metalness: 0.9,
+        transparent: true,
+        opacity: waterOpacity,
+      });
+      const water = new THREE.Mesh(waterGeo, waterMat);
+      water.rotation.x = -Math.PI / 2;
+      water.position.set(0, -totalDepth + 1.2, 1);
+      structureGroup.add(water);
+      waterMeshRef.current = water;
+
     } else {
       // -----------------------------------------------------------------------
-      // ARCHETYPE: STEPWELL LINEAR CORRIDOR (Rani Ki Vav & Adalaj Ni Vav)
+      // ARCHETYPE 5: LINEAR STEPPED TEMPLE CORRIDOR (Rani Ki Vav & Adalaj Ni Vav)
+      // 7-Tier Inverted Subterranean Temple Corridor with 16-Sided Fluted Columns
       // -----------------------------------------------------------------------
-      // B. Retaining Wall Zig-Zag Ghat Steps
+      const tierSpacing = (totalDepth - 4.5) / Math.max(1, numTiers - 1);
+      const tierDepths = Array.from({ length: numTiers }, (_, i) => -i * tierSpacing);
+      const columnOffsets = [
+        [-3.2, -2.0],
+        [3.2, -2.0],
+        [-3.2, 2.0],
+        [3.2, 2.0],
+      ];
+
+      // Subterranean Excavation Retaining Box Trench
+      const pitGeo = new THREE.BoxGeometry(17.6, totalDepth + 4, 46.5);
+      const pitMat = new THREE.MeshStandardMaterial({
+        color: 0x131a29,
+        roughness: 0.95,
+        side: THREE.BackSide,
+      });
+      const pit = new THREE.Mesh(pitGeo, pitMat);
+      pit.position.set(0, -(totalDepth + 4) / 2, 0);
+      pit.receiveShadow = true;
+      structureGroup.add(pit);
+
+      // Ground Surface Plinth
+      const groundGeo = new THREE.PlaneGeometry(160, 160);
+      const groundMat = new THREE.MeshStandardMaterial({
+        map: sandstoneTex,
+        color: sandstoneHex,
+        roughness: 0.92,
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      structureGroup.add(ground);
+
+      // Retaining Wall Zig-Zag Ghat Steps
       for (let side = -1; side <= 1; side += 2) {
         for (let level = 0; level < numTiers; level++) {
           const yBase = -level * (totalDepth / numTiers);
@@ -505,7 +1034,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
         }
       }
 
-      // C. Dynamic Tiers of Pavilions (Mandapas) with Ornate Columns & Arches
+      // Dynamic Tiers of Pavilions (Mandapas) with Ornate Columns & Arches
       tierDepths.forEach((yDepth, tierIdx) => {
         const zPos = 16 - tierIdx * (30 / Math.max(1, numTiers - 1));
 
@@ -576,68 +1105,93 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
         arch.castShadow = true;
         pillarsGroup.add(arch);
       });
+
+      // Octagonal Subterranean Light-Well Shaft at Western End
+      const shaftRadius = 5.6;
+      const octShaftGeo = new THREE.CylinderGeometry(shaftRadius, shaftRadius, totalDepth + 2, 8, 1, true);
+      const octShaftMat = new THREE.MeshStandardMaterial({
+        map: sandstoneTex,
+        color: sandstoneHex,
+        roughness: 0.8,
+        side: THREE.DoubleSide,
+      });
+      const octShaft = new THREE.Mesh(octShaftGeo, octShaftMat);
+      octShaft.position.set(0, -totalDepth / 2, -8);
+      octShaft.castShadow = true;
+      octShaft.receiveShadow = true;
+      shaftGroup.add(octShaft);
+
+      // Multi-Tier Balconies (Jharokhas) & Golden Niches inside Octagonal Shaft
+      for (let r = 0; r < 8; r++) {
+        const angle = (r * Math.PI * 2) / 8;
+        const nx = Math.cos(angle) * (shaftRadius - 0.25);
+        const nz = -8 + Math.sin(angle) * (shaftRadius - 0.25);
+
+        // Niche Frame
+        const nicheGeo = new THREE.BoxGeometry(1.1, 2.3, 0.55);
+        const niche = new THREE.Mesh(nicheGeo, friezeMat);
+        niche.position.set(nx, -14, nz);
+        niche.rotation.y = -angle + Math.PI / 2;
+        niche.castShadow = true;
+        shaftGroup.add(niche);
+
+        // Golden Idol (Vishnu / Dashavatara / Apsara) inside Niche
+        const idolGeo = new THREE.CylinderGeometry(0.18, 0.28, 1.25, 8);
+        const idol = new THREE.Mesh(idolGeo, goldIconMat);
+        idol.position.set(nx * 0.95, -14, nz * 0.95);
+        idol.castShadow = true;
+        shaftGroup.add(idol);
+      }
+
+      // Volumetric Sun Shaft Cone (God Ray through Octagonal Oculus)
+      const coneGeo = new THREE.CylinderGeometry(2.8, 5.5, 25, 24, 1, true);
+      const coneMat = new THREE.MeshBasicMaterial({
+        color: 0xfef08a,
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+      });
+      const sunShaftCone = new THREE.Mesh(coneGeo, coneMat);
+      sunShaftCone.position.set(0, -11, -8);
+      structureGroup.add(sunShaftCone);
+      sunShaftConeRef.current = sunShaftCone;
+
+      // Subterranean Cistern Water Surface with Submerged Steps
+      const waterColor = twinData?.water_spec?.color || 0x0284c7;
+      const waterOpacity = twinData?.water_spec?.opacity || 0.88;
+      const waterGeo = new THREE.CircleGeometry(5.2, 48);
+      const waterMat = new THREE.MeshStandardMaterial({
+        color: waterColor,
+        roughness: 0.08,
+        metalness: 0.9,
+        transparent: true,
+        opacity: waterOpacity,
+      });
+      const water = new THREE.Mesh(waterGeo, waterMat);
+      water.rotation.x = -Math.PI / 2;
+      water.position.set(0, -totalDepth + 1.8, -8);
+      water.receiveShadow = true;
+      structureGroup.add(water);
+      waterMeshRef.current = water;
+
+      // Surface Entrance Gateway Torana Arch
+      const mainToranaGeo = new THREE.TorusGeometry(3.6, 0.35, 12, 32, Math.PI);
+      const mainTorana = new THREE.Mesh(mainToranaGeo, friezeMat);
+      mainTorana.position.set(0, 3.6, 16);
+      mainTorana.castShadow = true;
+      structureGroup.add(mainTorana);
     }
 
-    // D. Octagonal Subterranean Light-Well Shaft
-    const shaftRadius = 5.6;
-    const octShaftGeo = new THREE.CylinderGeometry(shaftRadius, shaftRadius, totalDepth + 2, 8, 1, true);
-    const octShaftMat = new THREE.MeshStandardMaterial({
-      map: sandstoneTex,
-      color: sandstoneHex,
-      roughness: 0.8,
-      side: THREE.DoubleSide,
-    });
-    const octShaft = new THREE.Mesh(octShaftGeo, octShaftMat);
-    octShaft.position.set(0, -totalDepth / 2, -8);
-    octShaft.castShadow = true;
-    octShaft.receiveShadow = true;
-    shaftGroup.add(octShaft);
-
-    // Multi-Tier Balconies (Jharokhas) & Golden Niches inside Octagonal Shaft
-    for (let r = 0; r < 8; r++) {
-      const angle = (r * Math.PI * 2) / 8;
-      const nx = Math.cos(angle) * (shaftRadius - 0.25);
-      const nz = -8 + Math.sin(angle) * (shaftRadius - 0.25);
-
-      // Niche Frame
-      const nicheGeo = new THREE.BoxGeometry(1.1, 2.3, 0.55);
-      const niche = new THREE.Mesh(nicheGeo, friezeMat);
-      niche.position.set(nx, -14, nz);
-      niche.rotation.y = -angle + Math.PI / 2;
-      niche.castShadow = true;
-      shaftGroup.add(niche);
-
-      // Golden Idol (Vishnu / Dashavatara / Apsara) inside Niche
-      const idolGeo = new THREE.CylinderGeometry(0.18, 0.28, 1.25, 8);
-      const idol = new THREE.Mesh(idolGeo, goldIconMat);
-      idol.position.set(nx * 0.95, -14, nz * 0.95);
-      idol.castShadow = true;
-      shaftGroup.add(idol);
-    }
-
-    // E. Volumetric Sun Shaft Cone (God Ray through Octagonal Oculus)
-    const coneGeo = new THREE.CylinderGeometry(2.8, 5.5, 25, 24, 1, true);
-    const coneMat = new THREE.MeshBasicMaterial({
-      color: 0xfef08a,
-      transparent: true,
-      opacity: 0.15,
-      side: THREE.DoubleSide,
-      blending: THREE.AdditiveBlending,
-    });
-    const sunShaftCone = new THREE.Mesh(coneGeo, coneMat);
-    sunShaftCone.position.set(0, -11, -8);
-    structureGroup.add(sunShaftCone);
-    sunShaftConeRef.current = sunShaftCone;
-
-    // F. Floating Subterranean Dust Motes (450 Atmospheric Particles)
+    // Floating Atmospheric Dust Motes (Available across all archetypes)
     const particleCount = 450;
     const particleGeo = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
 
     for (let p = 0; p < particleCount; p++) {
-      particlePositions[p * 3] = (Math.random() - 0.5) * 12;
-      particlePositions[p * 3 + 1] = -Math.random() * 24;
-      particlePositions[p * 3 + 2] = -8 + (Math.random() - 0.5) * 20;
+      particlePositions[p * 3] = (Math.random() - 0.5) * 18;
+      particlePositions[p * 3 + 1] = -Math.random() * (totalDepth || 24);
+      particlePositions[p * 3 + 2] = -8 + (Math.random() - 0.5) * 28;
     }
     particleGeo.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
 
@@ -651,39 +1205,6 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     const dustParticles = new THREE.Points(particleGeo, particleMat);
     structureGroup.add(dustParticles);
     dustParticlesRef.current = dustParticles;
-
-    // G. Subterranean Cistern Water Surface with Submerged Steps
-    const waterColor = twinData?.water_spec?.color || 0x0284c7;
-    const waterOpacity = twinData?.water_spec?.opacity || 0.88;
-    const waterGeo = new THREE.CircleGeometry(5.2, 48);
-    const waterMat = new THREE.MeshStandardMaterial({
-      color: waterColor,
-      roughness: 0.08,
-      metalness: 0.9,
-      transparent: true,
-      opacity: waterOpacity,
-    });
-    const water = new THREE.Mesh(waterGeo, waterMat);
-    water.rotation.x = -Math.PI / 2;
-    water.position.set(0, -totalDepth + 1.8, -8);
-    water.receiveShadow = true;
-    structureGroup.add(water);
-    waterMeshRef.current = water;
-
-    // Submerged stone steps descending into the cistern
-    for (let ws = 0; ws < 4; ws++) {
-      const wStepGeo = new THREE.BoxGeometry(4.2, 0.35, 0.65);
-      const wStep = new THREE.Mesh(wStepGeo, stoneMat);
-      wStep.position.set(0, -totalDepth + 1.6 - ws * 0.45, -5.5 - ws * 0.55);
-      structureGroup.add(wStep);
-    }
-
-    // H. Surface Entrance Gateway Torana Arch
-    const mainToranaGeo = new THREE.TorusGeometry(3.6, 0.35, 12, 32, Math.PI);
-    const mainTorana = new THREE.Mesh(mainToranaGeo, friezeMat);
-    mainTorana.position.set(0, 3.6, 16);
-    mainTorana.castShadow = true;
-    structureGroup.add(mainTorana);
 
     // =========================================================================
     // 3. LIGHTING (Directional Sun & Warm Torches)
@@ -791,14 +1312,54 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     let animId: number;
     const clock = new THREE.Clock();
 
-    const tourWaypoints = [
-      { pos: new THREE.Vector3(26, 16, 28), look: new THREE.Vector3(0, 0, 12) },
-      { pos: new THREE.Vector3(12, 5, 20), look: new THREE.Vector3(0, -2, 14) },
-      { pos: new THREE.Vector3(-4, -1, 14), look: new THREE.Vector3(-2.8, -4.5, 9) },
-      { pos: new THREE.Vector3(0, -7, 4), look: new THREE.Vector3(0, -13, -8) },
-      { pos: new THREE.Vector3(2, -15, -3), look: new THREE.Vector3(0, -21, -8) },
-      { pos: new THREE.Vector3(0, -20, -3), look: new THREE.Vector3(0, -22.5, -8) },
-    ];
+    const getTourWaypoints = () => {
+      if (geomType === "monolithic_rockcut") {
+        return [
+          { pos: new THREE.Vector3(26, 12, 28), look: new THREE.Vector3(0, -6, 8) },
+          { pos: new THREE.Vector3(14, -6, 18), look: new THREE.Vector3(-9, -2, 14) },
+          { pos: new THREE.Vector3(0, -2, 18), look: new THREE.Vector3(0, 0, 8) },
+          { pos: new THREE.Vector3(12, 6, -4), look: new THREE.Vector3(0, 8, -10) },
+          { pos: new THREE.Vector3(-14, -8, -4), look: new THREE.Vector3(-8, -12, -4) },
+          { pos: new THREE.Vector3(28, 22, 28), look: new THREE.Vector3(0, -6, 0) },
+        ];
+      } else if (geomType === "chariot_mandapa") {
+        return [
+          { pos: new THREE.Vector3(0, 5, 28), look: new THREE.Vector3(0, 3, 14) },
+          { pos: new THREE.Vector3(16, 5, 6), look: new THREE.Vector3(8, 2, -2) },
+          { pos: new THREE.Vector3(10, 8, 12), look: new THREE.Vector3(0, 6, 9) },
+          { pos: new THREE.Vector3(18, 16, -6), look: new THREE.Vector3(0, 12, -6) },
+          { pos: new THREE.Vector3(-16, 6, -2), look: new THREE.Vector3(-8, 2, -2) },
+          { pos: new THREE.Vector3(26, 20, 26), look: new THREE.Vector3(0, 4, 0) },
+        ];
+      } else if (geomType === "octagonal_kund") {
+        return [
+          { pos: new THREE.Vector3(0, 6, 26), look: new THREE.Vector3(0, 2, 12) },
+          { pos: new THREE.Vector3(16, 4, 14), look: new THREE.Vector3(0, -4, 0) },
+          { pos: new THREE.Vector3(0, -6, 4), look: new THREE.Vector3(0, -12, 0) },
+          { pos: new THREE.Vector3(-12, 6, -18), look: new THREE.Vector3(0, 4, -22) },
+          { pos: new THREE.Vector3(26, 22, 26), look: new THREE.Vector3(0, -4, 0) },
+        ];
+      } else if (geomType === "stepped_pyramid_baori") {
+        return [
+          { pos: new THREE.Vector3(18, 12, 20), look: new THREE.Vector3(0, -6, 0) },
+          { pos: new THREE.Vector3(0, 0, -4), look: new THREE.Vector3(0, -4, -12) },
+          { pos: new THREE.Vector3(-10, -8, 10), look: new THREE.Vector3(0, -12, 0) },
+          { pos: new THREE.Vector3(0, -14, 2), look: new THREE.Vector3(0, -18, 0) },
+          { pos: new THREE.Vector3(24, 22, 24), look: new THREE.Vector3(0, -8, 0) },
+        ];
+      } else {
+        return [
+          { pos: new THREE.Vector3(26, 16, 28), look: new THREE.Vector3(0, 0, 12) },
+          { pos: new THREE.Vector3(12, 5, 20), look: new THREE.Vector3(0, -2, 14) },
+          { pos: new THREE.Vector3(-4, -1, 14), look: new THREE.Vector3(-2.8, -4.5, 9) },
+          { pos: new THREE.Vector3(0, -7, 4), look: new THREE.Vector3(0, -13, -8) },
+          { pos: new THREE.Vector3(2, -15, -3), look: new THREE.Vector3(0, -21, -8) },
+          { pos: new THREE.Vector3(0, -20, -3), look: new THREE.Vector3(0, -22.5, -8) },
+        ];
+      }
+    };
+
+    const tourWaypoints = getTourWaypoints();
 
     const animate = () => {
       animId = requestAnimationFrame(animate);

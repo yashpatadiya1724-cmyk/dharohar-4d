@@ -26,7 +26,9 @@ import {
   Eye,
   ShieldCheck,
   Compass,
-  AlertCircle
+  AlertCircle,
+  Search,
+  Wand2
 } from "lucide-react";
 
 export default function TwinStudioPage() {
@@ -46,6 +48,36 @@ export default function TwinStudioPage() {
       photo_sample_count: 14,
       google_photos_url: "https://photos.app.goo.gl/ranikivav-unesco-patana",
       manual_notes: "UNESCO World Heritage site built by Queen Udayamati in memory of King Bhimadeva I. Over 500 principal sculptures including Sheshashayi Vishnu, Dashavatara, and apsaras along seven stepped terraced galleries.",
+    },
+    {
+      id: "preset-kailasa",
+      name: "Kailasa Rock-Cut Temple, Cave 16",
+      location: "Ellora Caves, Aurangabad, Maharashtra",
+      dynasty: "Rashtrakuta Dynasty (King Krishna I)",
+      architectural_style: "Monolithic Rock-Cut Megalith (Top-Down Carved)",
+      depth_meters: 30.0,
+      tiers_count: 5,
+      geometry_type: "monolithic_rockcut",
+      stone_material: "basalt_black",
+      water_state: "dry_excavated",
+      photo_sample_count: 18,
+      google_photos_url: "https://photos.app.goo.gl/kailasa-ellora-monolith",
+      manual_notes: "The largest monolithic rock excavation in the world. Carved top-down out of a single basalt cliffside by excavating over 200,000 tonnes of volcanic rock without mortar, featuring life-sized elephants and two 16m monolithic Dhwaja Stambhas.",
+    },
+    {
+      id: "preset-konark",
+      name: "Konark Sun Temple (କୋଣାର୍କ ସୂର୍ଯ୍ୟ ମନ୍ଦିର)",
+      location: "Puri District, Bay of Bengal Coast, Odisha",
+      dynasty: "Eastern Ganga Dynasty (King Narasimhadeva I)",
+      architectural_style: "Kalinga Celestial Chariot Architecture",
+      depth_meters: 22.0,
+      tiers_count: 5,
+      geometry_type: "chariot_mandapa",
+      stone_material: "dhrangadhra_gold",
+      water_state: "lotus_pool",
+      photo_sample_count: 20,
+      google_photos_url: "https://photos.app.goo.gl/konark-sun-temple-chariot",
+      manual_notes: "Designed as a cosmic stone chariot of the Sun God Surya, mounted on 24 exquisitely carved stone wheels (accurate sundials) pulled by seven galloping stone horses toward the oceanic dawn.",
     },
     {
       id: "preset-modhera",
@@ -78,21 +110,24 @@ export default function TwinStudioPage() {
       manual_notes: "One of the deepest and largest stepwells in the world with 3,500 narrow steps over 13 stories, engineered as a mathematical labyrinth for water harvesting in arid terrain.",
     },
     {
-      id: "preset-custom",
-      name: "Custom Explorer Monument Capture",
-      location: "Gandhinagar / Gujarat Heritage Corridor",
-      dynasty: "Medieval Western Indian",
-      architectural_style: "Pillared Subterranean Corridor",
-      depth_meters: 22.0,
-      tiers_count: 5,
-      geometry_type: "stepwell_linear",
-      stone_material: "agra_red",
+      id: "preset-hampi",
+      name: "Hampi Stone Chariot (ಕಲ್ಲಿನ ರಥ)",
+      location: "Vijayanagara District, Hampi, Karnataka",
+      dynasty: "Vijayanagara Empire (King Krishnadevaraya)",
+      architectural_style: "Vijayanagara Musical Hypostyle Chariot",
+      depth_meters: 18.0,
+      tiers_count: 4,
+      geometry_type: "chariot_mandapa",
+      stone_material: "dhrangadhra_gold",
       water_state: "sacred_aquifer",
-      photo_sample_count: 6,
-      google_photos_url: "",
-      manual_notes: "Documented during IIT Gandhinagar Explorer Fellowship survey. Detailed stone carvings, floral motifs, and subterranean chamber ventilation shafts.",
+      photo_sample_count: 15,
+      google_photos_url: "https://photos.app.goo.gl/hampi-stone-chariot",
+      manual_notes: "Iconic shrine dedicated to Garuda inside the Vittala Temple complex, built with monolithic granite slabs carved to simulate a temple on moving stone wheels, flanked by acoustic sa-re-ga-ma musical pillars.",
     },
   ];
+
+  // Search State for Autonomous Mode
+  const [searchQuery, setSearchQuery] = useState<string>("Rani Ki Vav");
 
   // Active Form State
   const [monumentName, setMonumentName] = useState<string>(presets[0].name);
@@ -118,6 +153,7 @@ export default function TwinStudioPage() {
   // AI Pipeline State
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [synthesisStep, setSynthesisStep] = useState<number>(0);
+  const [currentStepText, setCurrentStepText] = useState<string>("");
   const [generatedTwin, setGeneratedTwin] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"studio" | "model" | "epigraph" | "telemetry">("model");
 
@@ -147,9 +183,9 @@ export default function TwinStudioPage() {
     return {
       id: `twin-live-${Date.now()}`,
       name: activeName,
-      location: locationStr,
+      location: overrides?.location || locationStr,
       dynasty: activeDynasty,
-      architectural_style: architecturalStyle,
+      architectural_style: overrides?.architectural_style || architecturalStyle,
       depth_meters: activeDepth,
       tiers_count: activeTiers,
       geometry_type: activeGeom,
@@ -187,8 +223,7 @@ export default function TwinStudioPage() {
 
   // Sync initial live twin on mount
   useEffect(() => {
-    setGeneratedTwin(getLiveTwinSpec());
-    handleSynthesizeTwin();
+    handleAutonomousResearch("Rani Ki Vav");
   }, []);
 
   // Update live twin immediately whenever form sliders, stone, water, or geometry changes
@@ -198,84 +233,69 @@ export default function TwinStudioPage() {
       epigraph: prev?.epigraph,
       photogrammetry_report: prev?.photogrammetry_report,
     }));
-  }, [monumentName, locationStr, dynasty, depthMeters, tiersCount, geometryType, stoneMaterial, waterState]);
+  }, [depthMeters, tiersCount, geometryType, stoneMaterial, waterState]);
 
-  const handleSelectPreset = (p: typeof presets[0]) => {
-    setMonumentName(p.name);
-    setLocationStr(p.location);
-    setDynasty(p.dynasty);
-    setArchitecturalStyle(p.architectural_style);
-    setDepthMeters(p.depth_meters);
-    setTiersCount(p.tiers_count);
-    setGeometryType(p.geometry_type);
-    setStoneMaterial(p.stone_material);
-    setWaterState(p.water_state);
-    setGooglePhotosUrl(p.google_photos_url);
-    setManualNotes(p.manual_notes);
+  // Master Function: Autonomous Research & Synthesis from Just a Name
+  const handleAutonomousResearch = async (targetQuery?: string) => {
+    const q = (targetQuery || searchQuery || "").trim();
+    if (!q) return;
 
-    // Immediately morph the 3D twin to the selected preset!
-    const updated = getLiveTwinSpec({
-      monument_name: p.name,
-      depth_meters: p.depth_meters,
-      tiers_count: p.tiers_count,
-      geometry_type: p.geometry_type,
-      stone_material: p.stone_material,
-      water_state: p.water_state,
-      dynasty: p.dynasty,
-    });
-    setGeneratedTwin(updated);
-  };
-
-  const handleSynthesizeTwin = async () => {
     setIsGenerating(true);
     setSynthesisStep(1);
 
     const steps = [
-      "Ingesting Google Photos & extracting 3D photogrammetric feature keypoints...",
-      "Synthesizing subterranean stepped geometry & 16-sided fluted column bays...",
-      "Compiling procedural PBR stone ashlar & carved frieze textures...",
-      "Aligning real-world solar raytracer to geospatial coordinates...",
-      "Generating Sanskrit epigraph edict, modern Hindi & English translations...",
+      `Phase 1/5: AI querying historical archives & epigraphical corpus for "${q}"...`,
+      `Phase 2/5: Ingesting multi-view photogrammetric captures & vanishing lines for "${q}"...`,
+      `Phase 3/5: Reconstructing subterranean structural mesh & column orders...`,
+      `Phase 4/5: Compiling PBR stone ashlar & carved relief weathering shaders...`,
+      `Phase 5/5: Deciphering Sanskrit dedication verse, modern Hindi & English translations...`,
     ];
 
-    let currentStep = 1;
+    setCurrentStepText(steps[0]);
+    let stepIndex = 0;
     const interval = setInterval(() => {
-      currentStep++;
-      if (currentStep <= 5) {
-        setSynthesisStep(currentStep);
-      } else {
-        clearInterval(interval);
+      stepIndex++;
+      if (stepIndex < steps.length) {
+        setSynthesisStep(stepIndex + 1);
+        setCurrentStepText(steps[stepIndex]);
       }
-    }, 450);
+    }, 400);
 
     try {
-      const res = await api.generateCustomTwin({
-        monument_name: monumentName,
-        location: locationStr,
-        dynasty,
-        architectural_style: architecturalStyle,
-        depth_meters: depthMeters,
-        tiers_count: tiersCount,
-        geometry_type: geometryType,
-        stone_material: stoneMaterial,
-        water_state: waterState,
-        photo_urls: uploadedPhotos,
-        manual_notes: manualNotes,
-        latitude: 23.85,
-        longitude: 72.1,
-      });
-
+      const res = await api.autonomousResearchAndGenerate(q);
       if (res.success && res.twin) {
-        setGeneratedTwin(res.twin);
+        const twin = res.twin;
+        setGeneratedTwin(twin);
+
+        // Update active form states to match the research findings
+        setMonumentName(twin.name);
+        setLocationStr(twin.location);
+        setDynasty(twin.dynasty);
+        setArchitecturalStyle(twin.architectural_style);
+        setDepthMeters(twin.depth_meters);
+        setTiersCount(twin.tiers_count);
+        setGeometryType(twin.geometry_type);
+        setStoneMaterial(twin.stone_spec.name.toLowerCase().includes("red") ? "agra_red" : (twin.stone_spec.name.toLowerCase().includes("basalt") ? "basalt_black" : (twin.stone_spec.name.toLowerCase().includes("marble") ? "makrana_marble" : "dhrangadhra_gold")));
+        setWaterState(twin.water_spec.name.toLowerCase().includes("lotus") ? "lotus_pool" : (twin.water_spec.name.toLowerCase().includes("dry") ? "dry_excavated" : "sacred_aquifer"));
+        if (twin.images && twin.images.length > 0) {
+          setUploadedPhotos(twin.images);
+        }
+        setManualNotes(twin.manual_notes || "");
         setActiveTab("model");
       }
     } catch (err) {
-      console.error("Twin generation error:", err);
+      console.error("Autonomous research error:", err);
     } finally {
       clearInterval(interval);
       setIsGenerating(false);
       setSynthesisStep(0);
+      setCurrentStepText("");
     }
+  };
+
+  const handleSelectPreset = (p: typeof presets[0]) => {
+    setSearchQuery(p.name);
+    handleAutonomousResearch(p.name);
   };
 
   return (
@@ -286,16 +306,16 @@ export default function TwinStudioPage() {
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              <span>AI Neural Twin Architect</span>
+              <span>AI Autonomous Heritage Synthesizer</span>
             </span>
-            <span className="text-xs text-slate-400">Google Photos & Historical Lore ➔ 3D Monument Twin</span>
+            <span className="text-xs text-slate-400">Just enter any monument name ➔ AI Researches, Fetches Images & Synthesizes 3D Model</span>
           </div>
           <h1 className="text-3xl font-black text-white tracking-tight mt-1 flex items-center gap-3">
             <Cpu className="w-8 h-8 text-amber-400" />
-            Neural Monument 3D Generator Studio
+            Autonomous 3D Monument Digital Twin Generator
           </h1>
           <p className="text-sm text-slate-400 mt-1 max-w-3xl">
-            Upload Google Photos, field captures, and manual architectural notes. Our AI synthesizes an authentic, heavy, museum-grade 3D Digital Twin with real-time solar raytracing and Sanskrit epigraphy.
+            Type any monument name below. The AI autonomously browses historical archives, fetches multi-view photogrammetric photographs, and builds an authentic, heavy, museum-grade 3D Digital Twin with real-time solar raytracing.
           </p>
         </div>
 
@@ -310,80 +330,122 @@ export default function TwinStudioPage() {
         </div>
       </div>
 
-      {/* 2. Quick Preset Archetypes */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-slate-400">
-          <span className="font-semibold text-slate-200 flex items-center gap-1.5">
-            <Landmark className="w-4 h-4 text-amber-400" />
-            Quick Archetype Presets (Click to load authentic dataset):
+      {/* 2. THE KILLER SEARCH BAR: Just Type Any Monument Name */}
+      <div className="relative rounded-3xl p-6 bg-gradient-to-r from-slate-900 via-slate-950 to-amber-950/40 border border-amber-500/40 shadow-2xl space-y-4">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-extrabold text-amber-300 flex items-center gap-2">
+            <Search className="w-4 h-4 text-amber-400" />
+            <span>Autonomous Monument Prompt: Enter ANY Monument Name</span>
+          </label>
+          <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
+            Zero Manual Effort • 100% Autonomous AI Workflow
           </span>
-          <span>1-Click Photogrammetry Synthesis</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {presets.map((p) => {
-            const isSelected = monumentName === p.name;
-            return (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAutonomousResearch();
+          }}
+          className="flex flex-col sm:flex-row gap-3"
+        >
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="e.g. Rani Ki Vav, Kailasa Temple Ellora, Konark Sun Temple, Modhera, Chand Baori, Hampi..."
+              className="w-full bg-slate-950 border-2 border-amber-500/40 hover:border-amber-400 focus:border-amber-400 rounded-2xl px-4 py-3.5 text-sm font-semibold text-white focus:outline-none shadow-inner placeholder-slate-500"
+            />
+            {searchQuery && (
               <button
-                key={p.id}
-                onClick={() => handleSelectPreset(p)}
-                className={`p-3.5 rounded-2xl border text-left transition-all ${
-                  isSelected
-                    ? "bg-amber-950/70 border-amber-500 ring-2 ring-amber-500/20 shadow-lg scale-102"
-                    : "bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900"
-                }`}
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3.5 top-3.5 text-slate-500 hover:text-white text-xs font-bold"
               >
-                <div className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 w-fit mb-1">
-                  {p.depth_meters}m • {p.tiers_count} Tiers
-                </div>
-                <div className="font-bold text-sm text-white truncate">{p.name}</div>
-                <div className="text-xs text-slate-400 truncate mt-0.5">{p.location}</div>
-                <div className="text-[11px] text-slate-500 mt-2 truncate">{p.dynasty}</div>
+                ✕
               </button>
-            );
-          })}
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isGenerating}
+            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 disabled:opacity-70 shrink-0 hover:scale-102 active:scale-98"
+          >
+            {isGenerating ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                <span>AI Synthesizing...</span>
+              </>
+            ) : (
+              <>
+                <Wand2 className="w-4 h-4 fill-current" />
+                <span>AI Research & Build 3D Model</span>
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Live AI Progress Banner when researching */}
+        {isGenerating && (
+          <div className="bg-slate-950 p-3.5 rounded-2xl border border-amber-500/30 text-xs flex items-center justify-between animate-in fade-in">
+            <div className="flex items-center gap-2 text-amber-300 font-medium">
+              <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+              <span>{currentStepText || "AI Research in progress..."}</span>
+            </div>
+            <span className="text-[11px] font-mono text-slate-400">Step {synthesisStep}/5</span>
+          </div>
+        )}
+
+        {/* Suggested Quick Chips */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <span className="text-xs text-slate-400 font-medium">Try instantly:</span>
+          {[
+            { label: "👑 Rani Ki Vav", q: "Rani Ki Vav" },
+            { label: "🏔️ Kailasa Temple (Ellora)", q: "Kailasa Rock-Cut Temple, Cave 16" },
+            { label: "🛞 Konark Sun Temple", q: "Konark Sun Temple" },
+            { label: "☀️ Modhera Sun Temple", q: "Modhera Sun Temple & Surya Kund" },
+            { label: "📐 Chand Baori", q: "Chand Baori" },
+            { label: "🛕 Hampi Stone Chariot", q: "Hampi Stone Chariot" },
+            { label: "🏺 Adalaj Ni Vav", q: "Adalaj Ni Vav" },
+          ].map((chip) => (
+            <button
+              key={chip.q}
+              type="button"
+              onClick={() => {
+                setSearchQuery(chip.q);
+                handleAutonomousResearch(chip.q);
+              }}
+              className="text-xs bg-slate-900 hover:bg-amber-950/80 hover:border-amber-500/60 border border-slate-800 text-slate-300 hover:text-amber-200 px-3 py-1.5 rounded-xl transition-all"
+            >
+              {chip.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* 3. Master Studio Grid: Form (Left) & Real-Time 3D Viewer (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Input Studio (5 Cols) */}
+        {/* Left Column: AI Retrieved Architecture & Form Adjustments (5 Cols) */}
         <div className="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-5">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center gap-2">
               <Camera className="w-5 h-5 text-amber-400" />
-              <h3 className="font-bold text-base text-white">Photogrammetry & Architectural Inputs</h3>
+              <h3 className="font-bold text-base text-white">AI Retrieved Photogrammetry & Context</h3>
             </div>
-            <span className="text-xs text-amber-300 font-mono">Step 1 of 2</span>
+            <span className="text-xs text-emerald-400 font-mono">✓ AI Synced</span>
           </div>
 
-          {/* Section A: Google Photos Ingestion */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <LinkIcon className="w-3.5 h-3.5 text-sky-400" />
-                Google Photos / Drive Album URL
-              </span>
-              <span className="text-[10px] text-slate-400">Live Ingestion</span>
-            </label>
-            <input
-              type="text"
-              value={googlePhotosUrl}
-              onChange={(e) => setGooglePhotosUrl(e.target.value)}
-              placeholder="https://photos.app.goo.gl/your-monument-album..."
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-600 font-mono"
-            />
-          </div>
-
-          {/* Section B: Field Photos Scanner Preview */}
+          {/* Section B: Ingested Photos Scanner Preview */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs text-slate-300">
               <span className="font-bold flex items-center gap-1.5">
                 <Upload className="w-3.5 h-3.5 text-purple-400" />
-                Ingested Photo Keyframes ({uploadedPhotos.length} Captures):
+                AI Retrieved Multi-View Captures ({uploadedPhotos.length} Angles):
               </span>
               <label className="text-[11px] text-amber-400 hover:text-amber-300 cursor-pointer font-semibold">
-                + Add Photos
+                + Add Custom Photo
                 <input
                   type="file"
                   multiple
@@ -415,25 +477,25 @@ export default function TwinStudioPage() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
                   <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[8px] text-center font-mono text-cyan-300 py-0.5">
-                    CAM #{idx + 1}
+                    ANGLE #{idx + 1}
                   </div>
                 </div>
               ))}
             </div>
             <div className="flex flex-wrap gap-1.5 pt-1">
               <span className="text-[9px] bg-cyan-950/80 text-cyan-300 px-2 py-0.5 rounded-md border border-cyan-800">
-                ✓ 16-Sided Columns Detected
+                ✓ 3D Point Cloud Triangulated
               </span>
               <span className="text-[9px] bg-purple-950/80 text-purple-300 px-2 py-0.5 rounded-md border border-purple-800">
-                ✓ Torana Curvature Mapped
+                ✓ Vanishing Line Perspective Mapped
               </span>
               <span className="text-[9px] bg-amber-950/80 text-amber-300 px-2 py-0.5 rounded-md border border-amber-800">
-                ✓ Ashlar Joints Segmented
+                ✓ Procedural PBR Shaders Compiled
               </span>
             </div>
           </div>
 
-          {/* Section C: Monument Identity Form */}
+          {/* Section C: Monument Identity Form (Can tweak manually if desired) */}
           <div className="space-y-3 pt-2 border-t border-slate-800">
             <div>
               <label className="text-xs font-bold text-slate-300 block mb-1">
@@ -450,7 +512,7 @@ export default function TwinStudioPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-bold text-slate-300 block mb-1">
-                  Location / District
+                  Location / Region
                 </label>
                 <input
                   type="text"
@@ -464,17 +526,12 @@ export default function TwinStudioPage() {
                 <label className="text-xs font-bold text-slate-300 block mb-1">
                   Dynasty / Era
                 </label>
-                <select
+                <input
+                  type="text"
                   value={dynasty}
                   onChange={(e) => setDynasty(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
-                >
-                  <option value="Solanki / Maru-Gurjara">Solanki / Maru-Gurjara</option>
-                  <option value="Chaulukya Dynasty">Chaulukya Dynasty</option>
-                  <option value="Vaghela & Sultanate Synthesis">Vaghela & Sultanate Synthesis</option>
-                  <option value="Nikumbha Rajput">Nikumbha Rajput</option>
-                  <option value="Medieval Western Indian">Medieval Western Indian</option>
-                </select>
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
               </div>
             </div>
 
@@ -482,7 +539,7 @@ export default function TwinStudioPage() {
             <div className="grid grid-cols-2 gap-3 pt-1">
               <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-400 font-medium">Depth:</span>
+                  <span className="text-slate-400 font-medium">Depth/Elevation:</span>
                   <span className="font-bold text-sky-400">{depthMeters} meters</span>
                 </div>
                 <input
@@ -498,7 +555,7 @@ export default function TwinStudioPage() {
 
               <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-400 font-medium">Stories:</span>
+                  <span className="text-slate-400 font-medium">Stories / Tiers:</span>
                   <span className="font-bold text-amber-400">{tiersCount} Tiers</span>
                 </div>
                 <input
@@ -548,36 +605,17 @@ export default function TwinStudioPage() {
             {/* Field Notes & Lore */}
             <div>
               <label className="text-xs font-bold text-slate-300 block mb-1">
-                Student Explorer Field Notes & Historical Context
+                AI Archaeological Synthesis & Historical Lore
               </label>
               <textarea
                 rows={3}
                 value={manualNotes}
                 onChange={(e) => setManualNotes(e.target.value)}
-                placeholder="Enter folklore, epigraphic details, or architectural observations..."
+                placeholder="AI synthesized folklore, epigraphic details, or architectural observations..."
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500 leading-relaxed placeholder-slate-600"
               />
             </div>
           </div>
-
-          {/* Action Button */}
-          <button
-            onClick={handleSynthesizeTwin}
-            disabled={isGenerating}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 disabled:opacity-70 hover:scale-102 active:scale-98"
-          >
-            {isGenerating ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-                <span>Synthesizing 3D Digital Twin (Step {synthesisStep}/5)...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 fill-current" />
-                <span>Synthesize Hyper-Realistic 3D Digital Twin</span>
-              </>
-            )}
-          </button>
         </div>
 
         {/* Right Column: Live Interactive 3D Model & Analysis (7 Cols) */}
