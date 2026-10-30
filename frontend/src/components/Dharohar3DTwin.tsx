@@ -12,6 +12,7 @@ import {
   Compass,
   Info,
   Maximize2,
+  Minimize2,
   Calendar,
   Eye,
   Sliders,
@@ -21,7 +22,14 @@ import {
   Play,
   Pause,
   MapPin,
-  ChevronRight
+  ChevronRight,
+  Scan,
+  Camera,
+  Flame,
+  Radio,
+  CheckCircle2,
+  ZoomIn,
+  ZoomOut
 } from "lucide-react";
 
 interface Dharohar3DTwinProps {
@@ -44,18 +52,29 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
   onEpochChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Simulation Controls
-  const [timeHour, setTimeHour] = useState<number>(11.5); // 11:30 AM
-  const [epochIndex, setEpochIndex] = useState<number>(0); // 0: 1063 AD, 1: 1498 AD, 2: 1890 AD, 3: 2026 AD
-  const [currentDepth, setCurrentDepth] = useState<number>(12); // -12m depth view
+  // Simulation Controls State
+  const [timeHour, setTimeHour] = useState<number>(11.5); // 11:30 AM default
+  const [epochIndex, setEpochIndex] = useState<number>(0);
+  const [currentDepth, setCurrentDepth] = useState<number>(12);
   const [selectedPoi, setSelectedPoi] = useState<POI | null>(null);
+  const [renderMode, setRenderMode] = useState<"realistic" | "xray" | "lidar">("realistic");
+  const [isAutoRotate, setIsAutoRotate] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
-  // Cinematic Tour State
+  // Architectural Layer Visibility Toggles
+  const [layerPillars, setLayerPillars] = useState<boolean>(true);
+  const [layerShaft, setLayerShaft] = useState<boolean>(true);
+  const [layerWater, setLayerWater] = useState<boolean>(true);
+  const [layerRays, setLayerRays] = useState<boolean>(true);
+  const [layerTorches, setLayerTorches] = useState<boolean>(true);
+
+  // Cinematic Walkthrough State
   const [isTourPlaying, setIsTourPlaying] = useState<boolean>(false);
   const tourProgressRef = useRef<number>(0);
 
-  // Ambient Audio State
+  // Spatial Audio Synthesizer State
   const [ambientAudioActive, setAmbientAudioActive] = useState<boolean>(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const droneNodesRef = useRef<{ osc1: OscillatorNode; osc2: OscillatorNode; gain: GainNode } | null>(null);
@@ -66,76 +85,88 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
   const sunMeshRef = useRef<THREE.Mesh | null>(null);
   const sunShaftConeRef = useRef<THREE.Mesh | null>(null);
   const waterMeshRef = useRef<THREE.Mesh | null>(null);
+  const dustParticlesRef = useRef<THREE.Points | null>(null);
   const structureGroupRef = useRef<THREE.Group | null>(null);
-  const materialsRef = useRef<{ [key: string]: THREE.MeshStandardMaterial }>({});
+  const pillarsGroupRef = useRef<THREE.Group | null>(null);
+  const shaftGroupRef = useRef<THREE.Group | null>(null);
+  const torchesGroupRef = useRef<THREE.Group | null>(null);
+  const materialsRef = useRef<{ [key: string]: THREE.MeshStandardMaterial | THREE.MeshBasicMaterial }>({});
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const targetCamPosRef = useRef<THREE.Vector3>(new THREE.Vector3(22, 16, 26));
+  const targetCamPosRef = useRef<THREE.Vector3>(new THREE.Vector3(26, 18, 28));
   const targetLookAtRef = useRef<THREE.Vector3>(new THREE.Vector3(0, -9, 0));
+  const autoRotateAngleRef = useRef<number>(0);
 
+  // Historical Epoch Definitions
   const epochs = [
     {
       id: "1063",
       year: "1063 AD",
       name: "Solanki Golden Age",
       patron: "Queen Udayamati (Rani Ki Vav Era)",
-      sandstoneHex: 0xd9a766, // Warm golden Dhrangadhra sandstone
-      ambientIntensity: 0.8,
-      waterColor: 0x0ea5e9, // Crystal turquoise aquifer
-      torchCount: 8,
-      description: "Pristine carved sandstone, vibrant mineral frescos, and sacred ritual pools.",
+      sandstoneHex: 0xd4a359,
+      sandstoneRoughness: 0.72,
+      waterColor: 0x0284c7,
+      description: "Pristine carved Dhrangadhra golden sandstone, sacred subterranean water cisterns, and crisp Dashavatara sculptures.",
     },
     {
       id: "1498",
       year: "1498 AD",
       name: "Vaghela & Sultanate Synthesis",
       patron: "Queen Rudabai (Adalaj Era)",
-      sandstoneHex: 0xc8985c, // Mellow ornate sandstone
-      ambientIntensity: 0.7,
-      waterColor: 0x0284c7,
-      torchCount: 6,
-      description: "Queen Rudabai's memorial stepwell: Jain & Hindu motifs fused with Islamic arches.",
+      sandstoneHex: 0xc4934e,
+      sandstoneRoughness: 0.78,
+      waterColor: 0x0369a1,
+      description: "Queen Rudabai's memorial stepwell: Jain & Hindu motifs fused with intricate Indo-Islamic arches and Sanskrit royal edict.",
     },
     {
       id: "1890",
       year: "1890 AD",
       name: "Colonial Survey Era",
       patron: "Archaeological Survey of Western India",
-      sandstoneHex: 0xa88556, // Weathered patina & silt lines
-      ambientIntensity: 0.5,
-      waterColor: 0x0369a1,
-      torchCount: 2,
-      description: "Historical documentation, silt accumulation, and discovery of ancient Sanskrit epigraphs.",
+      sandstoneHex: 0x9e7b47,
+      sandstoneRoughness: 0.9,
+      waterColor: 0x075985,
+      description: "Historical documentation, natural weathering, silt accumulation, and rediscovery of subterranean galleries.",
     },
     {
       id: "2026",
       year: "2026 AD",
       name: "Modern ASI Protected Heritage",
       patron: "Archaeological Survey of India (ASI)",
-      sandstoneHex: 0x96774a, // Ancient preserved stone with modern lighting
-      ambientIntensity: 0.65,
-      waterColor: 0x075985,
-      torchCount: 0,
-      description: "UNESCO protected monument with laser scanning, digital preservation, and tourism conservation.",
+      sandstoneHex: 0x8a6a3b,
+      sandstoneRoughness: 0.85,
+      waterColor: 0x0c4a6e,
+      description: "UNESCO protected monument equipped with laser photogrammetry, high-resolution digital twins, and visitor galleries.",
     },
   ];
 
+  // Architectural Hotspots (POIs)
   const pois: POI[] = [
+    {
+      id: "poi-aerial",
+      name: "Aerial Axial Overview",
+      tier: "Surface Level",
+      elevation: "+24.0m",
+      description: "Birds-eye perspective of the 5-tiered linear stepped corridor cutting 24.5m into the earth, aligned along Gujarat's north-south solar axis.",
+      camPos: [28, 22, 32],
+      lookAt: [0, -10, 0],
+    },
     {
       id: "poi-torana",
       name: "Torana Entrance Mandapa",
       tier: "Surface Level",
       elevation: "0.0m",
-      description: "Triple-entrance gateway framed with lotus rosettes and ornamental bracket capitals greeting descending travelers.",
-      camPos: [14, 8, 22],
+      description: "Triple-entrance gateway framed by sculpted lotus rosettes, pot-and-foliage (kalasha) plinths, and ornamental bracket capitals.",
+      camPos: [14, 5, 23],
       lookAt: [0, 2, 14],
     },
     {
       id: "poi-edict",
       name: "Queen Rudabai Sanskrit Edict",
-      tier: "Tier 1 Gallery",
+      tier: "Tier 1 Pavilion",
       elevation: "-4.5m",
-      description: "Marble niche stele in Vikram Samvat 1555 recording the tragic love and diplomatic foundation of the stepwell.",
-      camPos: [-5, -2, 14],
+      description: "Carved marble niche stele in Vikram Samvat 1555 recording the foundation of the stepwell for public welfare and spiritual merit.",
+      camPos: [-5, -2, 13],
       lookAt: [-2.8, -4.5, 9],
     },
     {
@@ -143,77 +174,208 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
       name: "Octagonal Breathing Oculus",
       tier: "Tier 3 Intermediate",
       elevation: "-14.0m",
-      description: "Octagonal sky-well shaft functioning as a thermal chimney and solar clock, illuminating sculpted niches.",
-      camPos: [0, -6, -4],
+      description: "Octagonal subterranean light shaft acting as a solar clock and passive thermal chimney, casting dramatic sunbeams down to lower tiers.",
+      camPos: [0, -7, -2],
       lookAt: [0, -14, -8],
     },
     {
       id: "poi-cistern",
-      name: "Deep Aquifer Sump",
+      name: "Deep Subterranean Cistern",
       tier: "Tier 5 Cistern",
       elevation: "-22.5m",
-      description: "Ancient subterranean groundwater reservoir maintaining 6°C cooler microclimate through deep earth thermal mass.",
-      camPos: [0, -18, 0],
+      description: "Subterranean groundwater reservoir maintaining a natural 6°C cooler microclimate through passive thermal ground coupling.",
+      camPos: [0, -18, -1],
       lookAt: [0, -22, -8],
     },
   ];
 
-  // 1. Initialize Three.js Scene
+  // =========================================================================
+  // Helper: Procedural Sandstone Ashlar Block Texture (Canvas Generated)
+  // =========================================================================
+  const createSandstoneTexture = (baseColor = "#d4a359", darkerColor = "#8a6125"): THREE.CanvasTexture => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return new THREE.CanvasTexture(canvas);
+
+    // 1. Base sandstone fill
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 2. Geological sediment horizontal strata
+    for (let y = 0; y < 512; y += 3) {
+      ctx.fillStyle = Math.random() > 0.5 ? darkerColor : "#fef3c7";
+      ctx.globalAlpha = 0.05 + Math.random() * 0.08;
+      ctx.fillRect(0, y, 512, 2 + Math.random() * 2);
+    }
+
+    // 3. Ashlar masonry stone course seams
+    ctx.globalAlpha = 0.4;
+    ctx.strokeStyle = darkerColor;
+    ctx.lineWidth = 2.5;
+    const blockH = 64;
+    for (let y = 0; y <= 512; y += blockH) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y);
+      ctx.stroke();
+
+      const offset = (Math.floor(y / blockH) % 2) * 64;
+      for (let x = offset; x <= 512; x += 128) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + blockH);
+        ctx.stroke();
+      }
+    }
+
+    // 4. Weathering grain speckles
+    ctx.globalAlpha = 0.07;
+    for (let i = 0; i < 4000; i++) {
+      const rx = Math.random() * 512;
+      const ry = Math.random() * 512;
+      ctx.fillStyle = Math.random() > 0.5 ? "#000000" : "#ffffff";
+      ctx.fillRect(rx, ry, 1.5, 1.5);
+    }
+    ctx.globalAlpha = 1.0;
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(3, 3);
+    return texture;
+  };
+
+  // Helper: Procedural Floral Frieze Texture (Canvas Generated)
+  const createFriezeTexture = (): THREE.CanvasTexture => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return new THREE.CanvasTexture(canvas);
+
+    ctx.fillStyle = "#c4934e";
+    ctx.fillRect(0, 0, 512, 128);
+
+    ctx.strokeStyle = "#6b3b0d";
+    ctx.fillStyle = "#eab308";
+    ctx.lineWidth = 2.5;
+
+    for (let x = 32; x < 512; x += 64) {
+      // Diamond lozenge
+      ctx.beginPath();
+      ctx.moveTo(x, 16);
+      ctx.lineTo(x + 22, 64);
+      ctx.lineTo(x, 112);
+      ctx.lineTo(x - 22, 64);
+      ctx.closePath();
+      ctx.stroke();
+
+      // Inner rosette
+      ctx.beginPath();
+      ctx.arc(x, 64, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(4, 1);
+    return texture;
+  };
+
+  // =========================================================================
+  // 1. Initialize High-Fidelity 3D WebGL Scene
+  // =========================================================================
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
     const width = container.clientWidth || 800;
-    const height = 480;
+    const height = 560;
 
-    // Scene
+    // A. Scene with Atmospheric Depth Fog
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0f1d);
-    scene.fog = new THREE.FogExp2(0x0a0f1d, 0.018);
+    scene.background = new THREE.Color(0x060913);
+    scene.fog = new THREE.FogExp2(0x060913, 0.015);
     sceneRef.current = scene;
 
-    // Camera
+    // B. Camera
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(22, 16, 26);
+    camera.position.set(26, 18, 28);
     camera.lookAt(0, -9, 0);
     cameraRef.current = camera;
 
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // C. WebGL Renderer with High Precision & Shadows
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.18;
 
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
 
-    // Master Group
+    // D. Master Groups
     const structureGroup = new THREE.Group();
     scene.add(structureGroup);
     structureGroupRef.current = structureGroup;
 
-    // Materials
+    const pillarsGroup = new THREE.Group();
+    structureGroup.add(pillarsGroup);
+    pillarsGroupRef.current = pillarsGroup;
+
+    const shaftGroup = new THREE.Group();
+    structureGroup.add(shaftGroup);
+    shaftGroupRef.current = shaftGroup;
+
+    const torchesGroup = new THREE.Group();
+    structureGroup.add(torchesGroup);
+    torchesGroupRef.current = torchesGroup;
+
+    // E. Realistic Materials with Procedural Textures
+    const sandstoneTex = createSandstoneTexture();
+    const friezeTex = createFriezeTexture();
+
     const stoneMat = new THREE.MeshStandardMaterial({
-      color: 0xd9a766,
-      roughness: 0.85,
-      metalness: 0.05,
+      map: sandstoneTex,
+      color: 0xd4a359,
+      roughness: 0.75,
+      metalness: 0.06,
     });
     materialsRef.current.stone = stoneMat;
 
-    const carvedMat = new THREE.MeshStandardMaterial({
-      color: 0xc89255,
-      roughness: 0.8,
+    const friezeMat = new THREE.MeshStandardMaterial({
+      map: friezeTex,
+      color: 0xc4934e,
+      roughness: 0.7,
       metalness: 0.1,
     });
-    materialsRef.current.carved = carvedMat;
+    materialsRef.current.carved = friezeMat;
 
-    // Subterranean Excavation Walls (-24m Depth)
-    const pitGeo = new THREE.BoxGeometry(16, 26, 44);
+    const goldIconMat = new THREE.MeshStandardMaterial({
+      color: 0xf59e0b,
+      roughness: 0.32,
+      metalness: 0.88,
+    });
+    materialsRef.current.gold = goldIconMat;
+
+    // =========================================================================
+    // 2. PROCEDURAL ARCHITECTURAL MODEL (Maru-Gurjara Subterranean Stepwell)
+    // =========================================================================
+
+    // A. Subterranean Excavation Retaining Box Trench
+    const pitGeo = new THREE.BoxGeometry(17.6, 26, 46.5);
     const pitMat = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
-      roughness: 0.9,
+      color: 0x131a29,
+      roughness: 0.95,
       side: THREE.BackSide,
     });
     const pit = new THREE.Mesh(pitGeo, pitMat);
@@ -221,11 +383,11 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     pit.receiveShadow = true;
     structureGroup.add(pit);
 
-    // Ground Surface
-    const groundGeo = new THREE.PlaneGeometry(120, 120);
+    // Ground Surface Plinth Surrounding the Well Trench
+    const groundGeo = new THREE.PlaneGeometry(160, 160);
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x334155,
-      roughness: 0.9,
+      color: 0x1e293b,
+      roughness: 0.92,
     });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
@@ -233,102 +395,155 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     ground.receiveShadow = true;
     structureGroup.add(ground);
 
-    // 5 Tiers of Pavilions & Stepped Corridors
-    const tierDepths = [0, -5, -10, -15, -20];
-    const pillarGeo = new THREE.CylinderGeometry(0.35, 0.42, 4.6, 12);
-    const capitalGeo = new THREE.BoxGeometry(1.2, 0.4, 1.2);
-    const lintelGeo = new THREE.BoxGeometry(7, 0.5, 0.8);
+    // Low Carved Parapet Wall around the Ground Aperture
+    const parapetGeo = new THREE.BoxGeometry(17.8, 1.2, 46.8);
+    const parapet = new THREE.Mesh(parapetGeo, friezeMat);
+    parapet.position.set(0, 0.6, 0);
+    parapet.castShadow = true;
+    structureGroup.add(parapet);
+
+    // B. Retaining Wall Zig-Zag Ghat Steps (Stepped Triangular Pyramids)
+    for (let side = -1; side <= 1; side += 2) {
+      for (let level = 0; level < 5; level++) {
+        const yBase = -level * 4.8;
+        for (let i = 0; i < 4; i++) {
+          const stepPyramidGeo = new THREE.ConeGeometry(1.65, 2.3, 4);
+          const stepPyramid = new THREE.Mesh(stepPyramidGeo, friezeMat);
+          stepPyramid.position.set(side * 7.45, yBase - 1.2, 12 - level * 7.5 + (i - 1.5) * 2.5);
+          stepPyramid.rotation.y = Math.PI / 4;
+          stepPyramid.castShadow = true;
+          stepPyramid.receiveShadow = true;
+          structureGroup.add(stepPyramid);
+        }
+      }
+    }
+
+    // C. 5 Tiers of Pavilions (Mandapas) with Ornate Columns & Arches
+    const tierDepths = [0, -4.8, -9.6, -14.4, -19.2];
+    const columnOffsets = [
+      [-3.2, -2.0],
+      [3.2, -2.0],
+      [-3.2, 2.0],
+      [3.2, 2.0],
+    ];
 
     tierDepths.forEach((yDepth, tierIdx) => {
       const zPos = 16 - tierIdx * 7.5;
 
-      // Floor Corridor
-      const floorGeo = new THREE.BoxGeometry(8, 0.6, 6);
+      // Gallery Floor with molded cornice
+      const floorGeo = new THREE.BoxGeometry(8.8, 0.75, 6.6);
       const floor = new THREE.Mesh(floorGeo, stoneMat);
       floor.position.set(0, yDepth, zPos);
       floor.receiveShadow = true;
       floor.castShadow = true;
       structureGroup.add(floor);
 
-      // Flights of Stairs
+      // Stone Balustrade (Vedika) on flanks
+      [-3.9, 3.9].forEach((bx) => {
+        const balustradeGeo = new THREE.BoxGeometry(0.4, 0.95, 6.4);
+        const balustrade = new THREE.Mesh(balustradeGeo, friezeMat);
+        balustrade.position.set(bx, yDepth + 0.8, zPos);
+        balustrade.castShadow = true;
+        structureGroup.add(balustrade);
+      });
+
+      // Flights of Stairs (Descending toward north)
       if (tierIdx < tierDepths.length - 1) {
-        for (let s = 0; s < 6; s++) {
-          const stepGeo = new THREE.BoxGeometry(6, 0.45, 0.7);
+        for (let s = 0; s < 7; s++) {
+          const stepGeo = new THREE.BoxGeometry(6.6, 0.42, 0.72);
           const step = new THREE.Mesh(stepGeo, stoneMat);
-          step.position.set(0, yDepth - (s + 1) * 0.75, zPos - 2.5 - s * 0.6);
+          step.position.set(0, yDepth - (s + 1) * 0.65, zPos - 2.8 - s * 0.62);
           step.receiveShadow = true;
           step.castShadow = true;
           structureGroup.add(step);
         }
       }
 
-      // Pillars per Tier
-      const pillarOffsets = [
-        [-2.8, -1.8],
-        [2.8, -1.8],
-        [-2.8, 1.8],
-        [2.8, 1.8],
-      ];
+      // Pillars per Tier (Solanki 16-Sided Fluted Columns with Bracket Capitals)
+      columnOffsets.forEach(([px, pz]) => {
+        // Base: Kalasha Pot Plinth
+        const baseGeo = new THREE.CylinderGeometry(0.55, 0.68, 0.65, 8);
+        const base = new THREE.Mesh(baseGeo, friezeMat);
+        base.position.set(px, yDepth + 0.68, zPos + pz);
+        base.castShadow = true;
+        pillarsGroup.add(base);
 
-      pillarOffsets.forEach(([px, pz]) => {
-        const pillar = new THREE.Mesh(pillarGeo, stoneMat);
-        pillar.position.set(px, yDepth + 2.3, zPos + pz);
-        pillar.castShadow = true;
-        pillar.receiveShadow = true;
-        structureGroup.add(pillar);
+        // Fluted 16-sided Column Shaft
+        const shaftColGeo = new THREE.CylinderGeometry(0.38, 0.46, 3.6, 16);
+        const colShaft = new THREE.Mesh(shaftColGeo, stoneMat);
+        colShaft.position.set(px, yDepth + 2.65, zPos + pz);
+        colShaft.castShadow = true;
+        colShaft.receiveShadow = true;
+        pillarsGroup.add(colShaft);
 
-        const capital = new THREE.Mesh(capitalGeo, carvedMat);
-        capital.position.set(px, yDepth + 4.6, zPos + pz);
+        // Double Bracket Capital (Torana Arm)
+        const capitalGeo = new THREE.BoxGeometry(1.45, 0.45, 1.45);
+        const capital = new THREE.Mesh(capitalGeo, friezeMat);
+        capital.position.set(px, yDepth + 4.55, zPos + pz);
         capital.castShadow = true;
-        structureGroup.add(capital);
+        pillarsGroup.add(capital);
       });
 
-      const lintel1 = new THREE.Mesh(lintelGeo, stoneMat);
-      lintel1.position.set(0, yDepth + 4.9, zPos - 1.8);
-      lintel1.castShadow = true;
-      structureGroup.add(lintel1);
+      // Transverse Carved Stone Lintels
+      [-2.0, 2.0].forEach((lz) => {
+        const lintelGeo = new THREE.BoxGeometry(7.9, 0.55, 0.88);
+        const lintel = new THREE.Mesh(lintelGeo, friezeMat);
+        lintel.position.set(0, yDepth + 4.88, zPos + lz);
+        lintel.castShadow = true;
+        pillarsGroup.add(lintel);
+      });
 
-      const lintel2 = new THREE.Mesh(lintelGeo, stoneMat);
-      lintel2.position.set(0, yDepth + 4.9, zPos + 1.8);
-      lintel2.castShadow = true;
-      structureGroup.add(lintel2);
+      // Cusped Torana Arch
+      const toranaArchGeo = new THREE.TorusGeometry(3.2, 0.24, 8, 24, Math.PI);
+      const arch = new THREE.Mesh(toranaArchGeo, friezeMat);
+      arch.position.set(0, yDepth + 4.35, zPos);
+      arch.castShadow = true;
+      pillarsGroup.add(arch);
     });
 
-    // Octagonal Subterranean Shaft
-    const shaftRadius = 5.2;
-    const shaftGeo = new THREE.CylinderGeometry(shaftRadius, shaftRadius, 22, 8, 1, true);
-    const shaftMat = new THREE.MeshStandardMaterial({
-      color: 0xb88850,
-      roughness: 0.85,
+    // D. Octagonal Subterranean Light-Well Shaft (-14m to -24m)
+    const shaftRadius = 5.6;
+    const octShaftGeo = new THREE.CylinderGeometry(shaftRadius, shaftRadius, 24, 8, 1, true);
+    const octShaftMat = new THREE.MeshStandardMaterial({
+      map: sandstoneTex,
+      color: 0xb58448,
+      roughness: 0.8,
       side: THREE.DoubleSide,
     });
-    const shaft = new THREE.Mesh(shaftGeo, shaftMat);
-    shaft.position.set(0, -11, -8);
-    shaft.castShadow = true;
-    shaft.receiveShadow = true;
-    structureGroup.add(shaft);
+    const octShaft = new THREE.Mesh(octShaftGeo, octShaftMat);
+    octShaft.position.set(0, -12, -8);
+    octShaft.castShadow = true;
+    octShaft.receiveShadow = true;
+    shaftGroup.add(octShaft);
 
-    // Sculptural Niches inside Shaft
+    // Multi-Tier Balconies (Jharokhas) & Golden Niches inside Octagonal Shaft
     for (let r = 0; r < 8; r++) {
       const angle = (r * Math.PI * 2) / 8;
-      const nicheGeo = new THREE.BoxGeometry(0.8, 1.8, 0.4);
-      const niche = new THREE.Mesh(nicheGeo, carvedMat);
-      niche.position.set(
-        Math.cos(angle) * (shaftRadius - 0.2),
-        -14,
-        -8 + Math.sin(angle) * (shaftRadius - 0.2)
-      );
+      const nx = Math.cos(angle) * (shaftRadius - 0.25);
+      const nz = -8 + Math.sin(angle) * (shaftRadius - 0.25);
+
+      // Niche Frame
+      const nicheGeo = new THREE.BoxGeometry(1.1, 2.3, 0.55);
+      const niche = new THREE.Mesh(nicheGeo, friezeMat);
+      niche.position.set(nx, -14, nz);
       niche.rotation.y = -angle + Math.PI / 2;
       niche.castShadow = true;
-      structureGroup.add(niche);
+      shaftGroup.add(niche);
+
+      // Golden Idol (Vishnu / Dashavatara / Apsara) inside Niche
+      const idolGeo = new THREE.CylinderGeometry(0.18, 0.28, 1.25, 8);
+      const idol = new THREE.Mesh(idolGeo, goldIconMat);
+      idol.position.set(nx * 0.95, -14, nz * 0.95);
+      idol.castShadow = true;
+      shaftGroup.add(idol);
     }
 
-    // Volumetric Sun Shaft Cone
-    const coneGeo = new THREE.CylinderGeometry(2.5, 4.8, 22, 16, 1, true);
+    // E. Volumetric Sun Shaft Cone (God Ray through Octagonal Oculus)
+    const coneGeo = new THREE.CylinderGeometry(2.8, 5.5, 25, 24, 1, true);
     const coneMat = new THREE.MeshBasicMaterial({
       color: 0xfef08a,
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.15,
       side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending,
     });
@@ -337,74 +552,125 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     structureGroup.add(sunShaftCone);
     sunShaftConeRef.current = sunShaftCone;
 
-    // Subterranean Aquifer Water Surface
-    const waterGeo = new THREE.CircleGeometry(5.0, 32);
+    // F. Floating Subterranean Dust Motes (450 Atmospheric Particles)
+    const particleCount = 450;
+    const particleGeo = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+
+    for (let p = 0; p < particleCount; p++) {
+      particlePositions[p * 3] = (Math.random() - 0.5) * 12;
+      particlePositions[p * 3 + 1] = -Math.random() * 24;
+      particlePositions[p * 3 + 2] = -8 + (Math.random() - 0.5) * 20;
+    }
+    particleGeo.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
+
+    const particleMat = new THREE.PointsMaterial({
+      color: 0xfef08a,
+      size: 0.18,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+    });
+    const dustParticles = new THREE.Points(particleGeo, particleMat);
+    structureGroup.add(dustParticles);
+    dustParticlesRef.current = dustParticles;
+
+    // G. Subterranean Cistern Water Surface with Submerged Steps
+    const waterGeo = new THREE.CircleGeometry(5.2, 48);
     const waterMat = new THREE.MeshStandardMaterial({
-      color: 0x0ea5e9,
-      roughness: 0.15,
-      metalness: 0.85,
+      color: 0x0284c7,
+      roughness: 0.08,
+      metalness: 0.9,
       transparent: true,
       opacity: 0.88,
     });
     const water = new THREE.Mesh(waterGeo, waterMat);
     water.rotation.x = -Math.PI / 2;
-    water.position.set(0, -21.8, -8);
+    water.position.set(0, -22.2, -8);
     water.receiveShadow = true;
     structureGroup.add(water);
     waterMeshRef.current = water;
 
-    // Entrance Torana Arch
-    const toranaArchGeo = new THREE.TorusGeometry(3.2, 0.3, 8, 24, Math.PI);
-    const torana = new THREE.Mesh(toranaArchGeo, carvedMat);
-    torana.position.set(0, 3.2, 16);
-    torana.castShadow = true;
-    structureGroup.add(torana);
+    // Submerged stone steps descending into the cistern
+    for (let ws = 0; ws < 4; ws++) {
+      const wStepGeo = new THREE.BoxGeometry(4.2, 0.35, 0.65);
+      const wStep = new THREE.Mesh(wStepGeo, stoneMat);
+      wStep.position.set(0, -22.4 - ws * 0.45, -5.5 - ws * 0.55);
+      structureGroup.add(wStep);
+    }
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffedd5, 0.6);
+    // H. Surface Entrance Gateway Torana Arch
+    const mainToranaGeo = new THREE.TorusGeometry(3.6, 0.35, 12, 32, Math.PI);
+    const mainTorana = new THREE.Mesh(mainToranaGeo, friezeMat);
+    mainTorana.position.set(0, 3.6, 16);
+    mainTorana.castShadow = true;
+    structureGroup.add(mainTorana);
+
+    // =========================================================================
+    // 3. LIGHTING (Directional Sun & Warm Torches)
+    // =========================================================================
+    const ambientLight = new THREE.AmbientLight(0xffedd5, 0.68);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff7ed, 2.8);
+    const sunLight = new THREE.DirectionalLight(0xfff7ed, 3.2);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 2048;
     sunLight.shadow.mapSize.height = 2048;
     sunLight.shadow.camera.near = 0.5;
-    sunLight.shadow.camera.far = 100;
-    sunLight.shadow.camera.left = -25;
-    sunLight.shadow.camera.right = 25;
-    sunLight.shadow.camera.top = 25;
-    sunLight.shadow.camera.bottom = -25;
-    sunLight.shadow.bias = -0.0005;
+    sunLight.shadow.camera.far = 120;
+    sunLight.shadow.camera.left = -30;
+    sunLight.shadow.camera.right = 30;
+    sunLight.shadow.camera.top = 30;
+    sunLight.shadow.camera.bottom = -30;
+    sunLight.shadow.bias = -0.0004;
     scene.add(sunLight);
     sunLightRef.current = sunLight;
 
-    const sunGeo = new THREE.SphereGeometry(1.4, 16, 16);
-    const sunMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
-    const sunMesh = new THREE.Mesh(sunGeo, sunMat);
+    const sunGeo = new THREE.SphereGeometry(1.6, 24, 24);
+    const sunMeshMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+    const sunMesh = new THREE.Mesh(sunGeo, sunMeshMat);
     scene.add(sunMesh);
     sunMeshRef.current = sunMesh;
 
-    // Subterranean Torches
-    const torch1 = new THREE.PointLight(0xf97316, 2.5, 12, 1.5);
-    torch1.position.set(0, -16, -6);
-    scene.add(torch1);
+    // Subterranean Flaming Wall Torches (Mashaals with Point Lights)
+    const torch1 = new THREE.PointLight(0xf97316, 2.8, 14, 1.4);
+    torch1.position.set(0, -15, -6);
+    torchesGroup.add(torch1);
 
-    const torch2 = new THREE.PointLight(0xf97316, 1.8, 10, 1.5);
-    torch2.position.set(0, -9, 8);
-    scene.add(torch2);
+    const torch2 = new THREE.PointLight(0xf97316, 2.2, 12, 1.4);
+    torch2.position.set(0, -9.6, 8);
+    torchesGroup.add(torch2);
 
-    // Mouse Drag Controls
+    // Decorative Torch Brackets
+    [torch1.position, torch2.position].forEach((pos) => {
+      const sconceGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 8);
+      const sconce = new THREE.Mesh(sconceGeo, goldIconMat);
+      sconce.position.copy(pos);
+      sconce.position.y -= 0.4;
+      torchesGroup.add(sconce);
+
+      const flameGeo = new THREE.SphereGeometry(0.2, 12, 12);
+      const flameMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
+      const flame = new THREE.Mesh(flameGeo, flameMat);
+      flame.position.copy(pos);
+      torchesGroup.add(flame);
+    });
+
+    // =========================================================================
+    // 4. MOUSE ORBITAL CONTROLS & EVENT LISTENERS
+    // =========================================================================
     let isDragging = false;
     let prevMouseX = 0;
     let prevMouseY = 0;
-    let sphericalTheta = 0.9;
-    let sphericalPhi = 0.9;
-    let sphericalRadius = 40;
+    let sphericalTheta = 0.85;
+    let sphericalPhi = 0.82;
+    let sphericalRadius = 44;
 
     const onMouseDown = (e: MouseEvent) => {
       isDragging = true;
       prevMouseX = e.clientX;
       prevMouseY = e.clientY;
+      setIsAutoRotate(false);
     };
 
     const onMouseMove = (e: MouseEvent) => {
@@ -414,8 +680,8 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
       prevMouseX = e.clientX;
       prevMouseY = e.clientY;
 
-      sphericalTheta -= deltaX * 0.008;
-      sphericalPhi = Math.max(0.15, Math.min(Math.PI / 2.1, sphericalPhi - deltaY * 0.008));
+      sphericalTheta -= deltaX * 0.007;
+      sphericalPhi = Math.max(0.12, Math.min(Math.PI / 2.05, sphericalPhi - deltaY * 0.007));
 
       targetCamPosRef.current.x = sphericalRadius * Math.sin(sphericalPhi) * Math.sin(sphericalTheta);
       targetCamPosRef.current.y = sphericalRadius * Math.cos(sphericalPhi) - 6;
@@ -427,7 +693,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     };
 
     const onWheel = (e: WheelEvent) => {
-      sphericalRadius = Math.max(16, Math.min(65, sphericalRadius + e.deltaY * 0.04));
+      sphericalRadius = Math.max(14, Math.min(75, sphericalRadius + e.deltaY * 0.04));
       targetCamPosRef.current.x = sphericalRadius * Math.sin(sphericalPhi) * Math.sin(sphericalTheta);
       targetCamPosRef.current.y = sphericalRadius * Math.cos(sphericalPhi) - 6;
       targetCamPosRef.current.z = sphericalRadius * Math.sin(sphericalPhi) * Math.cos(sphericalTheta);
@@ -440,49 +706,63 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     window.addEventListener("mouseup", onMouseUp);
     dom.addEventListener("wheel", onWheel, { passive: false });
 
-    // Animation Render Loop
+    // =========================================================================
+    // 5. ANIMATION & RENDER LOOP
+    // =========================================================================
     let animId: number;
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
-    // Waypoints for Cinematic Tour
     const tourWaypoints = [
-      { pos: new THREE.Vector3(20, 12, 26), look: new THREE.Vector3(0, 0, 10) },
-      { pos: new THREE.Vector3(8, 4, 18), look: new THREE.Vector3(0, -2, 12) },
-      { pos: new THREE.Vector3(-4, -2, 12), look: new THREE.Vector3(-2.8, -4.5, 9) },
-      { pos: new THREE.Vector3(0, -8, 2), look: new THREE.Vector3(0, -12, -8) },
-      { pos: new THREE.Vector3(3, -15, -4), look: new THREE.Vector3(0, -20, -8) },
-      { pos: new THREE.Vector3(0, -19, -4), look: new THREE.Vector3(0, -22, -8) },
+      { pos: new THREE.Vector3(26, 16, 28), look: new THREE.Vector3(0, 0, 12) },
+      { pos: new THREE.Vector3(12, 5, 20), look: new THREE.Vector3(0, -2, 14) },
+      { pos: new THREE.Vector3(-4, -1, 14), look: new THREE.Vector3(-2.8, -4.5, 9) },
+      { pos: new THREE.Vector3(0, -7, 4), look: new THREE.Vector3(0, -13, -8) },
+      { pos: new THREE.Vector3(2, -15, -3), look: new THREE.Vector3(0, -21, -8) },
+      { pos: new THREE.Vector3(0, -20, -3), look: new THREE.Vector3(0, -22.5, -8) },
     ];
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
 
-      // Water ripple oscillation
+      // Water Ripple Oscillation
       if (waterMeshRef.current) {
-        waterMeshRef.current.position.y = -21.8 + Math.sin(elapsedTime * 1.5) * 0.06;
+        waterMeshRef.current.position.y = -22.2 + Math.sin(elapsedTime * 1.6) * 0.06;
       }
 
-      // Torch flame flicker
-      torch1.intensity = 2.4 + Math.sin(elapsedTime * 6) * 0.4;
-      torch2.intensity = 1.8 + Math.cos(elapsedTime * 5.5) * 0.3;
+      // Torches Flame Flickering
+      torch1.intensity = 2.8 + Math.sin(elapsedTime * 6.5) * 0.45;
+      torch2.intensity = 2.2 + Math.cos(elapsedTime * 5.8) * 0.35;
 
-      // Cinematic Tour Walkthrough Camera Interpolation
+      // Dust Motes Slow Upward Drift
+      if (dustParticlesRef.current) {
+        const positions = dustParticlesRef.current.geometry.attributes.position.array as Float32Array;
+        for (let i = 1; i < positions.length; i += 3) {
+          positions[i] += 0.012;
+          if (positions[i] > 1) positions[i] = -24;
+        }
+        dustParticlesRef.current.geometry.attributes.position.needsUpdate = true;
+      }
+
+      // Auto-Rotate Turntable
+      if (isAutoRotate && !isTourPlaying) {
+        autoRotateAngleRef.current += 0.003;
+        targetCamPosRef.current.x = sphericalRadius * Math.sin(sphericalPhi) * Math.sin(autoRotateAngleRef.current);
+        targetCamPosRef.current.z = sphericalRadius * Math.sin(sphericalPhi) * Math.cos(autoRotateAngleRef.current);
+      }
+
+      // Guided Walkthrough Camera Flight
       if (isTourPlaying) {
-        tourProgressRef.current += 0.0025;
+        tourProgressRef.current += 0.0022;
         if (tourProgressRef.current >= tourWaypoints.length - 1) {
-          tourProgressRef.current = 0; // loop or stop
+          tourProgressRef.current = 0;
         }
 
         const currIdx = Math.floor(tourProgressRef.current);
         const nextIdx = (currIdx + 1) % tourWaypoints.length;
         const segmentProgress = tourProgressRef.current - currIdx;
 
-        camera.position.lerpVectors(
-          tourWaypoints[currIdx].pos,
-          tourWaypoints[nextIdx].pos,
-          segmentProgress
-        );
+        camera.position.lerpVectors(tourWaypoints[currIdx].pos, tourWaypoints[nextIdx].pos, segmentProgress);
         const currentLookAt = new THREE.Vector3().lerpVectors(
           tourWaypoints[currIdx].look,
           tourWaypoints[nextIdx].look,
@@ -490,7 +770,6 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
         );
         camera.lookAt(currentLookAt);
       } else {
-        // Smooth camera damping towards target position & lookAt
         camera.position.lerp(targetCamPosRef.current, 0.08);
         camera.lookAt(targetLookAtRef.current);
       }
@@ -499,12 +778,14 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     };
     animate();
 
+    // Window Resize Handling
     const handleResize = () => {
       if (!containerRef.current) return;
       const w = containerRef.current.clientWidth;
-      camera.aspect = w / height;
+      const h = containerRef.current.clientHeight || height;
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(w, height);
+      renderer.setSize(w, h);
     };
     window.addEventListener("resize", handleResize);
 
@@ -517,16 +798,20 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
       window.removeEventListener("resize", handleResize);
       renderer.dispose();
     };
-  }, [isTourPlaying]);
+  }, [isTourPlaying, isAutoRotate]);
 
-  // Update Sun Position Based on Time of Day Slider
+  // =========================================================================
+  // 6. DYNAMIC UPDATES (Sun Raytracer, Render Modes, Layer Toggles)
+  // =========================================================================
+
+  // Update Sun Lighting from Slider (7 AM to 6 PM)
   useEffect(() => {
     if (!sunLightRef.current || !sunMeshRef.current) return;
 
     const normalizedHour = (timeHour - 7) / 11;
     const angle = normalizedHour * Math.PI;
 
-    const sunDist = 42;
+    const sunDist = 44;
     const sunX = Math.cos(angle) * sunDist * 0.9;
     const sunY = Math.sin(angle) * sunDist * 0.85 + 2;
     const sunZ = Math.sin(angle * 0.8) * 14 - 4;
@@ -535,66 +820,108 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     sunLightRef.current.lookAt(0, -10, -4);
     sunMeshRef.current.position.set(sunX, sunY, sunZ);
 
-    // Dynamic light color & intensity
     if (timeHour < 9 || timeHour > 16.5) {
       sunLightRef.current.color.setHex(0xfdba74);
-      sunLightRef.current.intensity = 1.9;
+      sunLightRef.current.intensity = 2.0;
       if (sunShaftConeRef.current) {
-        (sunShaftConeRef.current.material as THREE.MeshBasicMaterial).opacity = 0.04;
+        (sunShaftConeRef.current.material as THREE.MeshBasicMaterial).opacity = 0.05;
       }
     } else {
       sunLightRef.current.color.setHex(0xfffbeb);
-      sunLightRef.current.intensity = 3.2;
+      sunLightRef.current.intensity = 3.4;
       if (sunShaftConeRef.current) {
-        (sunShaftConeRef.current.material as THREE.MeshBasicMaterial).opacity = 0.16;
+        (sunShaftConeRef.current.material as THREE.MeshBasicMaterial).opacity = 0.18;
       }
     }
   }, [timeHour]);
 
-  // Update Epoch Styles
+  // Update Render Modes (Realistic Sandstone, X-Ray Cutaway, LiDAR Laser Scan)
   useEffect(() => {
-    const selected = epochs[epochIndex];
-    if (materialsRef.current.stone) {
-      materialsRef.current.stone.color.setHex(selected.sandstoneHex);
+    if (!structureGroupRef.current) return;
+
+    structureGroupRef.current.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        if (renderMode === "realistic") {
+          const selected = epochs[epochIndex];
+          if (child.material instanceof THREE.MeshStandardMaterial) {
+            child.material.wireframe = false;
+            child.material.transparent = false;
+            child.material.opacity = 1.0;
+            if (child === waterMeshRef.current) {
+              child.material.transparent = true;
+              child.material.opacity = 0.88;
+            } else if (child.name !== "pit") {
+              child.material.color.setHex(selected.sandstoneHex);
+            }
+          }
+        } else if (renderMode === "xray") {
+          if (child.material instanceof THREE.MeshStandardMaterial) {
+            child.material.wireframe = false;
+            child.material.transparent = true;
+            child.material.opacity = 0.35;
+            child.material.color.setHex(0x38bdf8); // neon cyan
+          }
+        } else if (renderMode === "lidar") {
+          if (child.material instanceof THREE.MeshStandardMaterial) {
+            child.material.wireframe = true;
+            child.material.transparent = true;
+            child.material.opacity = 0.8;
+            child.material.color.setHex(0x34d399); // emerald lidar
+          }
+        }
+      }
+    });
+
+    if (sceneRef.current) {
+      sceneRef.current.background = new THREE.Color(
+        renderMode === "lidar" ? 0x02130e : renderMode === "xray" ? 0x031326 : 0x060913
+      );
     }
-    if (materialsRef.current.carved) {
-      materialsRef.current.carved.color.setHex(selected.sandstoneHex);
-    }
-    if (waterMeshRef.current && (waterMeshRef.current.material as THREE.MeshStandardMaterial)) {
-      (waterMeshRef.current.material as THREE.MeshStandardMaterial).color.setHex(selected.waterColor);
-    }
-    if (onEpochChange) {
-      onEpochChange(selected.id);
-    }
-  }, [epochIndex]);
+  }, [renderMode, epochIndex]);
+
+  // Architectural Layer Visibility
+  useEffect(() => {
+    if (pillarsGroupRef.current) pillarsGroupRef.current.visible = layerPillars;
+    if (shaftGroupRef.current) shaftGroupRef.current.visible = layerShaft;
+    if (waterMeshRef.current) waterMeshRef.current.visible = layerWater;
+    if (sunShaftConeRef.current) sunShaftConeRef.current.visible = layerRays;
+    if (dustParticlesRef.current) dustParticlesRef.current.visible = layerRays;
+    if (torchesGroupRef.current) torchesGroupRef.current.visible = layerTorches;
+  }, [layerPillars, layerShaft, layerWater, layerRays, layerTorches]);
 
   // Handle Hotspot (POI) Flyto
   const handleSelectPoi = (poi: POI) => {
     setSelectedPoi(poi);
     setIsTourPlaying(false);
+    setIsAutoRotate(false);
     targetCamPosRef.current.set(...poi.camPos);
     targetLookAtRef.current.set(...poi.lookAt);
   };
 
-  // Web Audio 3D Spatial Acoustic Synthesizer
+  // Fullscreen Toggle
+  const toggleFullscreen = () => {
+    if (!wrapperRef.current) return;
+    if (!document.fullscreenElement) {
+      wrapperRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  };
+
+  // 3D Spatial Audio Synthesizer (Web Audio API)
   const playSpatialAcoustic = (type: "water" | "bell" | "ambient_toggle") => {
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new AudioCtx();
-      }
+      if (!audioCtxRef.current) audioCtxRef.current = new AudioCtx();
       const ctx = audioCtxRef.current;
-      if (ctx.state === "suspended") {
-        ctx.resume();
-      }
+      if (ctx.state === "suspended") ctx.resume();
 
       const now = ctx.currentTime;
       const depthReverbScale = Math.max(0.6, currentDepth / 6);
 
       if (type === "ambient_toggle") {
         if (ambientAudioActive && droneNodesRef.current) {
-          // Stop drone
           droneNodesRef.current.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
           setTimeout(() => {
             droneNodesRef.current?.osc1.stop();
@@ -603,16 +930,15 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
           }, 500);
           setAmbientAudioActive(false);
         } else {
-          // Start low subterranean drone
           const osc1 = ctx.createOscillator();
           const osc2 = ctx.createOscillator();
           const gain = ctx.createGain();
           const filter = ctx.createBiquadFilter();
 
           osc1.type = "sine";
-          osc1.frequency.setValueAtTime(55, now); // A1 note
+          osc1.frequency.setValueAtTime(55, now);
           osc2.type = "triangle";
-          osc2.frequency.setValueAtTime(55.8, now); // subtle binaural detune
+          osc2.frequency.setValueAtTime(55.8, now);
 
           filter.type = "lowpass";
           filter.frequency.setValueAtTime(140, now);
@@ -681,16 +1007,21 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
   const currentEpoch = epochs[epochIndex];
 
   return (
-    <div className="relative w-full rounded-3xl overflow-hidden border border-slate-700/80 bg-slate-950 shadow-2xl">
-      {/* Top HUD Controls */}
+    <div
+      ref={wrapperRef}
+      className={`relative w-full rounded-3xl overflow-hidden border border-amber-500/30 bg-slate-950 shadow-2xl transition-all ${
+        isFullscreen ? "fixed inset-0 z-50 rounded-none border-none" : ""
+      }`}
+    >
+      {/* 1. Header HUD Overlay */}
       <div className="absolute top-0 left-0 right-0 z-20 flex flex-wrap items-center justify-between gap-3 p-4 bg-gradient-to-b from-slate-950/95 via-slate-950/70 to-transparent backdrop-blur-xs">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-black text-xl shadow-md shadow-amber-950/30">
+          <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-amber-600 to-amber-400 border border-amber-400/50 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-amber-500/20">
             🏛️
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm md:text-base font-extrabold text-white tracking-wide">
+              <h2 className="text-sm md:text-base font-black text-white tracking-wide">
                 Adalaj Subterranean Stepwell 3D Digital Twin
               </h2>
               <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
@@ -698,80 +1029,67 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              5-Tier Subterranean Octagonal Shaft • 24.5m Depth • Solanki-Indo-Islamic Synthesis
+              5-Tier Pavilion Corridor • Octagonal Light Shaft • 24.5m Depth • Procedural Stone Masonry
             </p>
           </div>
         </div>
 
-        {/* Tour & Spatial Audio Controls */}
+        {/* View Mode Switcher: Realistic / X-Ray / LiDAR */}
         <div className="flex items-center gap-2">
-          {/* Cinematic Flythrough Tour Button */}
-          <button
-            onClick={() => {
-              setIsTourPlaying(!isTourPlaying);
-              setSelectedPoi(null);
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md ${
-              isTourPlaying
-                ? "bg-amber-500 text-slate-950 ring-2 ring-amber-400/50"
-                : "bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200"
-            }`}
-          >
-            {isTourPlaying ? (
-              <>
-                <Pause className="w-3.5 h-3.5 fill-current" />
-                <span>Pause Tour</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3.5 h-3.5 fill-current text-amber-400" />
-                <span>Cinematic Walkthrough</span>
-              </>
-            )}
-          </button>
+          <div className="flex bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs font-bold">
+            <button
+              onClick={() => setRenderMode("realistic")}
+              className={`px-2.5 py-1 rounded-lg transition-all ${
+                renderMode === "realistic"
+                  ? "bg-amber-500 text-slate-950 shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              🏛️ Stone
+            </button>
+            <button
+              onClick={() => setRenderMode("xray")}
+              className={`px-2.5 py-1 rounded-lg transition-all ${
+                renderMode === "xray"
+                  ? "bg-sky-500 text-slate-950 shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              📐 X-Ray
+            </button>
+            <button
+              onClick={() => setRenderMode("lidar")}
+              className={`px-2.5 py-1 rounded-lg transition-all ${
+                renderMode === "lidar"
+                  ? "bg-emerald-500 text-slate-950 shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              ⚡ LiDAR
+            </button>
+          </div>
 
-          {/* Continuous Ambient Drone */}
+          {/* Fullscreen Toggle */}
           <button
-            onClick={() => playSpatialAcoustic("ambient_toggle")}
-            className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
-              ambientAudioActive
-                ? "bg-purple-950 border-purple-500 text-purple-200"
-                : "bg-slate-800/90 hover:bg-slate-700 border-slate-700 text-slate-300"
-            }`}
-            title="Toggle Subterranean Ambient Atmosphere"
+            onClick={toggleFullscreen}
+            className="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-all shadow-xs"
+            title="Toggle Fullscreen"
           >
-            <Volume2 className={`w-3.5 h-3.5 ${ambientAudioActive ? "text-purple-400 animate-pulse" : "text-slate-400"}`} />
-            <span className="hidden sm:inline">{ambientAudioActive ? "Cavern Sound On" : "Ambient Sound"}</span>
-          </button>
-
-          {/* Sound FX Buttons */}
-          <button
-            onClick={() => playSpatialAcoustic("water")}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-sky-300 flex items-center gap-1 transition-all"
-            title="Trigger Water Droplet Reverb"
-          >
-            <span>💧 Echo</span>
-          </button>
-          <button
-            onClick={() => playSpatialAcoustic("bell")}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-amber-300 flex items-center gap-1 transition-all"
-            title="Trigger Temple Bell Resonance"
-          >
-            <span>🔔 Bell</span>
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
-      {/* 3D WebGL Canvas Container */}
+      {/* 2. Interactive 3D Canvas */}
       <div
         ref={containerRef}
-        className="w-full h-[500px] cursor-grab active:cursor-grabbing block"
+        className={`w-full ${isFullscreen ? "h-screen" : "h-[540px]"} cursor-grab active:cursor-grabbing block`}
       />
 
-      {/* Interactive 3D Hotspots Bar */}
-      <div className="absolute top-20 left-4 z-20 flex flex-col gap-1.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-slate-950/80 px-2.5 py-1 rounded-lg border border-slate-800 backdrop-blur w-fit">
-          Key 3D Architectural Hotspots
+      {/* 3. Floating Left Bar: Architectural Hotspots */}
+      <div className="absolute top-20 left-4 z-20 flex flex-col gap-1.5 hidden sm:flex">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-slate-950/90 px-2.5 py-1 rounded-lg border border-slate-800 backdrop-blur w-fit shadow-xs">
+          Architectural Hotspots (POIs)
         </span>
         <div className="flex flex-col gap-1.5">
           {pois.map((poi) => (
@@ -794,16 +1112,16 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
         </div>
       </div>
 
-      {/* Selected Hotspot Detail Card */}
+      {/* 4. Hotspot Archaeological Telemetry Modal */}
       {selectedPoi && (
-        <div className="absolute bottom-36 left-4 right-4 md:right-auto md:max-w-md z-20 bg-slate-950/95 border border-amber-500/40 rounded-2xl p-4 shadow-2xl backdrop-blur-md space-y-2 animate-in fade-in slide-in-from-bottom-2">
+        <div className="absolute bottom-40 left-4 right-4 md:right-auto md:max-w-md z-20 bg-slate-950/95 border border-amber-500/40 rounded-2xl p-4 shadow-2xl backdrop-blur-md space-y-2 animate-in fade-in slide-in-from-bottom-2">
           <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
             <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">
-              {selectedPoi.tier} • {selectedPoi.elevation}
+              {selectedPoi.tier} • Elevation: {selectedPoi.elevation}
             </span>
             <button
               onClick={() => setSelectedPoi(null)}
-              className="text-xs text-slate-400 hover:text-white"
+              className="text-xs text-slate-400 hover:text-white font-bold"
             >
               ✕ Close
             </button>
@@ -813,8 +1131,8 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
         </div>
       )}
 
-      {/* Real-time Subterranean Depth & Shaft Raytracer Overlay */}
-      <div className="absolute top-20 right-4 z-20 bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 backdrop-blur space-y-2 max-w-[210px] pointer-events-none hidden sm:block">
+      {/* 5. Subterranean Telemetry HUD (Right Side) */}
+      <div className="absolute top-20 right-4 z-20 bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 backdrop-blur space-y-2 max-w-[210px] pointer-events-none hidden sm:block shadow-xl">
         <div className="flex items-center justify-between text-amber-400 font-semibold border-b border-slate-800 pb-1.5">
           <span className="flex items-center gap-1">
             <Compass className="w-3.5 h-3.5" />
@@ -837,17 +1155,143 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">Chamber Temp:</span>
-            <span className="font-mono text-sky-300">
+            <span className="font-mono text-sky-300 font-bold">
               {32 - Math.round(currentDepth * 0.25)}°C (Cooling)
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Acoustic Decay:</span>
+            <span className="font-mono text-purple-300 font-bold">
+              {(0.4 + (currentDepth / 6) * 0.8).toFixed(1)}s Reverb
             </span>
           </div>
         </div>
       </div>
 
-      {/* Bottom Control Bar: 4D Epoch Time Travel + Diurnal Sun Slider */}
+      {/* 6. Bottom Master Controls: Layer Dissection, Walkthrough, Time Travel & Sun Sliders */}
       <div className="p-4 bg-slate-900/95 border-t border-slate-800 space-y-4">
-        {/* 4D Time-Travel Slider */}
-        <div className="space-y-2">
+        {/* Row A: Walkthrough, Auto-Rotate & Audio Synthesizer */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setIsTourPlaying(!isTourPlaying);
+                setSelectedPoi(null);
+                setIsAutoRotate(false);
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md ${
+                isTourPlaying
+                  ? "bg-amber-500 text-slate-950 ring-2 ring-amber-400/50"
+                  : "bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200"
+              }`}
+            >
+              {isTourPlaying ? (
+                <>
+                  <Pause className="w-3.5 h-3.5 fill-current" />
+                  <span>Pause Walkthrough</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 fill-current text-amber-400" />
+                  <span>Start 3D Walkthrough</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => {
+                setIsAutoRotate(!isAutoRotate);
+                setIsTourPlaying(false);
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                isAutoRotate
+                  ? "bg-amber-950/80 border-amber-500 text-amber-300"
+                  : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300"
+              }`}
+            >
+              🔄 Auto-Rotate
+            </button>
+          </div>
+
+          {/* Architectural Layer Dissection Toggles */}
+          <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-semibold">
+            <span className="text-slate-400 px-1.5 hidden md:inline">Layers:</span>
+            <button
+              onClick={() => setLayerPillars(!layerPillars)}
+              className={`px-2 py-0.5 rounded-lg transition-colors ${
+                layerPillars ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "text-slate-500"
+              }`}
+            >
+              Pillars
+            </button>
+            <button
+              onClick={() => setLayerShaft(!layerShaft)}
+              className={`px-2 py-0.5 rounded-lg transition-colors ${
+                layerShaft ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "text-slate-500"
+              }`}
+            >
+              Shaft
+            </button>
+            <button
+              onClick={() => setLayerWater(!layerWater)}
+              className={`px-2 py-0.5 rounded-lg transition-colors ${
+                layerWater ? "bg-sky-500/20 text-sky-300 border border-sky-500/30" : "text-slate-500"
+              }`}
+            >
+              Cistern
+            </button>
+            <button
+              onClick={() => setLayerRays(!layerRays)}
+              className={`px-2 py-0.5 rounded-lg transition-colors ${
+                layerRays ? "bg-amber-400/20 text-amber-300 border border-amber-400/30" : "text-slate-500"
+              }`}
+            >
+              God Rays
+            </button>
+            <button
+              onClick={() => setLayerTorches(!layerTorches)}
+              className={`px-2 py-0.5 rounded-lg transition-colors ${
+                layerTorches ? "bg-orange-500/20 text-orange-300 border border-orange-500/30" : "text-slate-500"
+              }`}
+            >
+              Torches
+            </button>
+          </div>
+
+          {/* Spatial Audio Synthesizer */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => playSpatialAcoustic("ambient_toggle")}
+              className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                ambientAudioActive
+                  ? "bg-purple-950 border-purple-500 text-purple-200"
+                  : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300"
+              }`}
+              title="Toggle Subterranean Cavern Atmosphere"
+            >
+              <Volume2 className={`w-3.5 h-3.5 ${ambientAudioActive ? "text-purple-400 animate-pulse" : "text-slate-400"}`} />
+              <span>{ambientAudioActive ? "Cavern Sound On" : "Cavern Atmosphere"}</span>
+            </button>
+
+            <button
+              onClick={() => playSpatialAcoustic("water")}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-sky-300 flex items-center gap-1 transition-all"
+              title="Trigger Water Droplet Reverb"
+            >
+              <span>💧 Drop Echo</span>
+            </button>
+            <button
+              onClick={() => playSpatialAcoustic("bell")}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-amber-300 flex items-center gap-1 transition-all"
+              title="Trigger Temple Bell Resonance"
+            >
+              <span>🔔 Bell Reverb</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Row B: 4D Time-Travel Epoch Slider */}
+        <div className="space-y-2 pt-2 border-t border-slate-800/80">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <History className="w-4 h-4 text-purple-400" />
@@ -867,7 +1311,10 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
             {epochs.map((ep, idx) => (
               <button
                 key={ep.id}
-                onClick={() => setEpochIndex(idx)}
+                onClick={() => {
+                  setEpochIndex(idx);
+                  if (onEpochChange) onEpochChange(ep.id);
+                }}
                 className={`py-2 px-2.5 text-center rounded-xl border text-xs font-bold transition-all ${
                   epochIndex === idx
                     ? "bg-purple-950/80 border-purple-500 text-purple-200 ring-2 ring-purple-500/30 shadow-md"
@@ -881,7 +1328,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
           </div>
         </div>
 
-        {/* Diurnal Sun Slider */}
+        {/* Row C: Diurnal Sun Slider & Subterranean Elevation Slider */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-800/80">
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
@@ -907,7 +1354,6 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
             </div>
           </div>
 
-          {/* Depth Acoustic & Camera Elevation Slider */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-300 font-medium flex items-center gap-1.5">
