@@ -411,23 +411,9 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     parapet.castShadow = true;
     structureGroup.add(parapet);
 
-    // B. Retaining Wall Zig-Zag Ghat Steps (Stepped Triangular Pyramids)
-    for (let side = -1; side <= 1; side += 2) {
-      for (let level = 0; level < numTiers; level++) {
-        const yBase = -level * (totalDepth / numTiers);
-        for (let i = 0; i < 4; i++) {
-          const stepPyramidGeo = new THREE.ConeGeometry(1.65, 2.3, 4);
-          const stepPyramid = new THREE.Mesh(stepPyramidGeo, friezeMat);
-          stepPyramid.position.set(side * 7.45, yBase - 1.2, 12 - level * (30 / numTiers) + (i - 1.5) * 2.5);
-          stepPyramid.rotation.y = Math.PI / 4;
-          stepPyramid.castShadow = true;
-          stepPyramid.receiveShadow = true;
-          structureGroup.add(stepPyramid);
-        }
-      }
-    }
-
-    // C. Dynamic Tiers of Pavilions (Mandapas) with Ornate Columns & Arches
+    // =========================================================================
+    // ARCHITECTURAL MORPHING BASED ON GEOMETRY TYPE
+    // =========================================================================
     const tierSpacing = (totalDepth - 4.5) / Math.max(1, numTiers - 1);
     const tierDepths = Array.from({ length: numTiers }, (_, i) => -i * tierSpacing);
     const columnOffsets = [
@@ -437,79 +423,160 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
       [3.2, 2.0],
     ];
 
-    tierDepths.forEach((yDepth, tierIdx) => {
-      const zPos = 16 - tierIdx * (30 / Math.max(1, numTiers - 1));
+    if (geomType === "octagonal_kund") {
+      // -----------------------------------------------------------------------
+      // ARCHETYPE: MODHERA SURYA KUND (Stepped Solar Reservoir with 108 Shrines)
+      // -----------------------------------------------------------------------
+      for (let level = 0; level < numTiers; level++) {
+        const yLevel = -level * (totalDepth / numTiers);
+        const w = 24 - level * (12 / numTiers);
+        const l = 32 - level * (16 / numTiers);
 
-      // Gallery Floor with molded cornice
-      const floorGeo = new THREE.BoxGeometry(8.8, 0.75, 6.6);
-      const floor = new THREE.Mesh(floorGeo, stoneMat);
-      floor.position.set(0, yDepth, zPos);
-      floor.receiveShadow = true;
-      floor.castShadow = true;
-      structureGroup.add(floor);
+        const terraceGeo = new THREE.BoxGeometry(w, 0.65, l);
+        const terrace = new THREE.Mesh(terraceGeo, stoneMat);
+        terrace.position.set(0, yLevel, 0);
+        terrace.receiveShadow = true;
+        structureGroup.add(terrace);
 
-      // Stone Balustrade (Vedika) on flanks
-      [-3.9, 3.9].forEach((bx) => {
-        const balustradeGeo = new THREE.BoxGeometry(0.4, 0.95, 6.4);
-        const balustrade = new THREE.Mesh(balustradeGeo, friezeMat);
-        balustrade.position.set(bx, yDepth + 0.8, zPos);
-        balustrade.castShadow = true;
-        structureGroup.add(balustrade);
-      });
+        // Miniature Stepped Shrines along the 4 terrace edges
+        const numShrines = 5;
+        for (let s = 0; s < numShrines; s++) {
+          const sx = -w / 2 + (s + 0.5) * (w / numShrines);
+          [-l / 2, l / 2].forEach((sz) => {
+            const shrineBaseGeo = new THREE.BoxGeometry(1.2, 1.4, 1.2);
+            const shrineBase = new THREE.Mesh(shrineBaseGeo, friezeMat);
+            shrineBase.position.set(sx, yLevel + 0.7, sz);
+            shrineBase.castShadow = true;
+            structureGroup.add(shrineBase);
 
-      // Flights of Stairs (Descending toward north)
-      if (tierIdx < tierDepths.length - 1) {
-        for (let s = 0; s < 7; s++) {
-          const stepGeo = new THREE.BoxGeometry(6.6, 0.42, 0.72);
-          const step = new THREE.Mesh(stepGeo, stoneMat);
-          step.position.set(0, yDepth - (s + 1) * (tierSpacing / 7.2), zPos - 2.8 - s * 0.62);
-          step.receiveShadow = true;
-          step.castShadow = true;
-          structureGroup.add(step);
+            const shikharaGeo = new THREE.ConeGeometry(0.7, 1.6, 4);
+            const shikhara = new THREE.Mesh(shikharaGeo, friezeMat);
+            shikhara.position.set(sx, yLevel + 2.2, sz);
+            shikhara.rotation.y = Math.PI / 4;
+            shikhara.castShadow = true;
+            structureGroup.add(shikhara);
+          });
+        }
+      }
+    } else if (geomType === "stepped_pyramid_baori") {
+      // -----------------------------------------------------------------------
+      // ARCHETYPE: CHAND BAORI (4-Sided Geometric Chevron Zigzag Step Maze)
+      // -----------------------------------------------------------------------
+      const baoriLevels = numTiers * 2;
+      for (let level = 0; level < baoriLevels; level++) {
+        const yLevel = -level * (totalDepth / baoriLevels);
+        const w = 26 - level * (18 / baoriLevels);
+        const l = 28 - level * (18 / baoriLevels);
+
+        const baoriStepGeo = new THREE.BoxGeometry(w, 0.5, l);
+        const baoriStep = new THREE.Mesh(baoriStepGeo, stoneMat);
+        baoriStep.position.set(0, yLevel, 0);
+        baoriStep.receiveShadow = true;
+        structureGroup.add(baoriStep);
+
+        // Chevron triangular steps on outer edges
+        for (let c = 0; c < 5; c++) {
+          const cx = -w / 2 + (c + 0.5) * (w / 5);
+          const chevronGeo = new THREE.ConeGeometry(1.2, 1.5, 4);
+          const chevron = new THREE.Mesh(chevronGeo, friezeMat);
+          chevron.position.set(cx, yLevel + 0.6, l / 2);
+          chevron.rotation.y = Math.PI / 4;
+          chevron.castShadow = true;
+          structureGroup.add(chevron);
+        }
+      }
+    } else {
+      // -----------------------------------------------------------------------
+      // ARCHETYPE: STEPWELL LINEAR CORRIDOR (Rani Ki Vav & Adalaj Ni Vav)
+      // -----------------------------------------------------------------------
+      // B. Retaining Wall Zig-Zag Ghat Steps
+      for (let side = -1; side <= 1; side += 2) {
+        for (let level = 0; level < numTiers; level++) {
+          const yBase = -level * (totalDepth / numTiers);
+          for (let i = 0; i < 4; i++) {
+            const stepPyramidGeo = new THREE.ConeGeometry(1.65, 2.3, 4);
+            const stepPyramid = new THREE.Mesh(stepPyramidGeo, friezeMat);
+            stepPyramid.position.set(side * 7.45, yBase - 1.2, 12 - level * (30 / numTiers) + (i - 1.5) * 2.5);
+            stepPyramid.rotation.y = Math.PI / 4;
+            stepPyramid.castShadow = true;
+            stepPyramid.receiveShadow = true;
+            structureGroup.add(stepPyramid);
+          }
         }
       }
 
-      // Pillars per Tier (Solanki 16-Sided Fluted Columns with Bracket Capitals)
-      columnOffsets.forEach(([px, pz]) => {
-        // Base: Kalasha Pot Plinth
-        const baseGeo = new THREE.CylinderGeometry(0.55, 0.68, 0.65, 8);
-        const base = new THREE.Mesh(baseGeo, friezeMat);
-        base.position.set(px, yDepth + 0.68, zPos + pz);
-        base.castShadow = true;
-        pillarsGroup.add(base);
+      // C. Dynamic Tiers of Pavilions (Mandapas) with Ornate Columns & Arches
+      tierDepths.forEach((yDepth, tierIdx) => {
+        const zPos = 16 - tierIdx * (30 / Math.max(1, numTiers - 1));
 
-        // Fluted 16-sided Column Shaft
-        const shaftColGeo = new THREE.CylinderGeometry(0.38, 0.46, 3.6, 16);
-        const colShaft = new THREE.Mesh(shaftColGeo, stoneMat);
-        colShaft.position.set(px, yDepth + 2.65, zPos + pz);
-        colShaft.castShadow = true;
-        colShaft.receiveShadow = true;
-        pillarsGroup.add(colShaft);
+        // Gallery Floor
+        const floorGeo = new THREE.BoxGeometry(8.8, 0.75, 6.6);
+        const floor = new THREE.Mesh(floorGeo, stoneMat);
+        floor.position.set(0, yDepth, zPos);
+        floor.receiveShadow = true;
+        floor.castShadow = true;
+        structureGroup.add(floor);
 
-        // Double Bracket Capital (Torana Arm)
-        const capitalGeo = new THREE.BoxGeometry(1.45, 0.45, 1.45);
-        const capital = new THREE.Mesh(capitalGeo, friezeMat);
-        capital.position.set(px, yDepth + 4.55, zPos + pz);
-        capital.castShadow = true;
-        pillarsGroup.add(capital);
+        // Stone Balustrade (Vedika) on flanks
+        [-3.9, 3.9].forEach((bx) => {
+          const balustradeGeo = new THREE.BoxGeometry(0.4, 0.95, 6.4);
+          const balustrade = new THREE.Mesh(balustradeGeo, friezeMat);
+          balustrade.position.set(bx, yDepth + 0.8, zPos);
+          balustrade.castShadow = true;
+          structureGroup.add(balustrade);
+        });
+
+        // Flights of Stairs (Descending toward north)
+        if (tierIdx < tierDepths.length - 1) {
+          for (let s = 0; s < 7; s++) {
+            const stepGeo = new THREE.BoxGeometry(6.6, 0.42, 0.72);
+            const step = new THREE.Mesh(stepGeo, stoneMat);
+            step.position.set(0, yDepth - (s + 1) * (tierSpacing / 7.2), zPos - 2.8 - s * 0.62);
+            step.receiveShadow = true;
+            step.castShadow = true;
+            structureGroup.add(step);
+          }
+        }
+
+        // Pillars per Tier (Solanki 16-Sided Fluted Columns with Bracket Capitals)
+        columnOffsets.forEach(([px, pz]) => {
+          const baseGeo = new THREE.CylinderGeometry(0.55, 0.68, 0.65, 8);
+          const base = new THREE.Mesh(baseGeo, friezeMat);
+          base.position.set(px, yDepth + 0.68, zPos + pz);
+          base.castShadow = true;
+          pillarsGroup.add(base);
+
+          const shaftColGeo = new THREE.CylinderGeometry(0.38, 0.46, 3.6, 16);
+          const colShaft = new THREE.Mesh(shaftColGeo, stoneMat);
+          colShaft.position.set(px, yDepth + 2.65, zPos + pz);
+          colShaft.castShadow = true;
+          colShaft.receiveShadow = true;
+          pillarsGroup.add(colShaft);
+
+          const capitalGeo = new THREE.BoxGeometry(1.45, 0.45, 1.45);
+          const capital = new THREE.Mesh(capitalGeo, friezeMat);
+          capital.position.set(px, yDepth + 4.55, zPos + pz);
+          capital.castShadow = true;
+          pillarsGroup.add(capital);
+        });
+
+        // Transverse Carved Stone Lintels
+        [-2.0, 2.0].forEach((lz) => {
+          const lintelGeo = new THREE.BoxGeometry(7.9, 0.55, 0.88);
+          const lintel = new THREE.Mesh(lintelGeo, friezeMat);
+          lintel.position.set(0, yDepth + 4.88, zPos + lz);
+          lintel.castShadow = true;
+          pillarsGroup.add(lintel);
+        });
+
+        // Cusped Torana Arch
+        const toranaArchGeo = new THREE.TorusGeometry(3.2, 0.24, 8, 24, Math.PI);
+        const arch = new THREE.Mesh(toranaArchGeo, friezeMat);
+        arch.position.set(0, yDepth + 4.35, zPos);
+        arch.castShadow = true;
+        pillarsGroup.add(arch);
       });
-
-      // Transverse Carved Stone Lintels
-      [-2.0, 2.0].forEach((lz) => {
-        const lintelGeo = new THREE.BoxGeometry(7.9, 0.55, 0.88);
-        const lintel = new THREE.Mesh(lintelGeo, friezeMat);
-        lintel.position.set(0, yDepth + 4.88, zPos + lz);
-        lintel.castShadow = true;
-        pillarsGroup.add(lintel);
-      });
-
-      // Cusped Torana Arch
-      const toranaArchGeo = new THREE.TorusGeometry(3.2, 0.24, 8, 24, Math.PI);
-      const arch = new THREE.Mesh(toranaArchGeo, friezeMat);
-      arch.position.set(0, yDepth + 4.35, zPos);
-      arch.castShadow = true;
-      pillarsGroup.add(arch);
-    });
+    }
 
     // D. Octagonal Subterranean Light-Well Shaft
     const shaftRadius = 5.6;

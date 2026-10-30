@@ -121,10 +121,84 @@ export default function TwinStudioPage() {
   const [generatedTwin, setGeneratedTwin] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"studio" | "model" | "epigraph" | "telemetry">("model");
 
-  // Load Initial Twin on mount
+  // Construct dynamic twin directly from active form inputs
+  const getLiveTwinSpec = (overrides?: any) => {
+    const matHexes: { [k: string]: number } = {
+      dhrangadhra_gold: 0xd4a359,
+      agra_red: 0x9f382b,
+      makrana_marble: 0xe2e8f0,
+      basalt_black: 0x334155,
+    };
+    const waterColors: { [k: string]: number } = {
+      sacred_aquifer: 0x0284c7,
+      lotus_pool: 0x0f766e,
+      dry_excavated: 0x475569,
+      monsoon_surge: 0x0369a1,
+    };
+
+    const activeStone = overrides?.stone_material || stoneMaterial;
+    const activeWater = overrides?.water_state || waterState;
+    const activeDepth = overrides?.depth_meters ?? depthMeters;
+    const activeTiers = overrides?.tiers_count ?? tiersCount;
+    const activeGeom = overrides?.geometry_type || geometryType;
+    const activeName = overrides?.monument_name || monumentName;
+    const activeDynasty = overrides?.dynasty || dynasty;
+
+    return {
+      id: `twin-live-${Date.now()}`,
+      name: activeName,
+      location: locationStr,
+      dynasty: activeDynasty,
+      architectural_style: architecturalStyle,
+      depth_meters: activeDepth,
+      tiers_count: activeTiers,
+      geometry_type: activeGeom,
+      stone_spec: {
+        name: activeStone,
+        hex: matHexes[activeStone] || 0xd4a359,
+        roughness: activeStone === "makrana_marble" ? 0.38 : 0.75,
+      },
+      water_spec: {
+        name: activeWater,
+        color: waterColors[activeWater] || 0x0284c7,
+        opacity: activeWater === "dry_excavated" ? 0.2 : 0.88,
+      },
+      cooling_delta_celsius: Math.round(activeDepth * 0.25 * 10) / 10,
+      epigraph: generatedTwin?.epigraph || {
+        title: `${activeName} Foundational Epigraph`,
+        script: "Proto-Devanagari / Early Maru-Gurjara Nagari",
+        language: "Epigraphical Classical Sanskrit",
+        transcription: "ॐ स्वस्ति श्री ! संवत् ११०२ वर्षे... श्री मदुदयमती महाराज्ञी कारिता वापी जगतः कल्याणाय ॥",
+        iast: "om svasti śrī ! saṃvat 1102 varṣe... śrī madudayamatī mahārājñī kāritā vāpī jagataḥ kalyāṇāya ||",
+        hindi_translation: "समस्त संसार के कल्याण और धर्म हेतु इस भव्य वापी का निर्माण करवाया गया।",
+        english_translation: "Commissioned for the universal welfare of all travelers and eternal merit.",
+        confidence_score: 0.984,
+      },
+      photogrammetry_report: generatedTwin?.photogrammetry_report || {
+        photos_ingested: uploadedPhotos.length,
+        point_cloud_density: "2.14 Million Vertices",
+        symmetry_alignment: "North-South Axial (Gujarat Solanki Solar Alignment)",
+        ground_sample_distance: "1.2 mm/pixel",
+        structural_mesh_status: "Synthesized with 16-Sided Fluted Columns & Stepped Ghats",
+        ai_archeological_verdict: `Architectural style matches classical ${activeDynasty} traditions. Subterranean passive thermal mass maintains ambient cavern cooling of -${Math.round(activeDepth * 0.25)}°C at bottom cistern.`,
+      },
+    };
+  };
+
+  // Sync initial live twin on mount
   useEffect(() => {
+    setGeneratedTwin(getLiveTwinSpec());
     handleSynthesizeTwin();
   }, []);
+
+  // Update live twin immediately whenever form sliders, stone, water, or geometry changes
+  useEffect(() => {
+    setGeneratedTwin((prev: any) => ({
+      ...getLiveTwinSpec(),
+      epigraph: prev?.epigraph,
+      photogrammetry_report: prev?.photogrammetry_report,
+    }));
+  }, [monumentName, locationStr, dynasty, depthMeters, tiersCount, geometryType, stoneMaterial, waterState]);
 
   const handleSelectPreset = (p: typeof presets[0]) => {
     setMonumentName(p.name);
@@ -138,6 +212,18 @@ export default function TwinStudioPage() {
     setWaterState(p.water_state);
     setGooglePhotosUrl(p.google_photos_url);
     setManualNotes(p.manual_notes);
+
+    // Immediately morph the 3D twin to the selected preset!
+    const updated = getLiveTwinSpec({
+      monument_name: p.name,
+      depth_meters: p.depth_meters,
+      tiers_count: p.tiers_count,
+      geometry_type: p.geometry_type,
+      stone_material: p.stone_material,
+      water_state: p.water_state,
+      dynasty: p.dynasty,
+    });
+    setGeneratedTwin(updated);
   };
 
   const handleSynthesizeTwin = async () => {
