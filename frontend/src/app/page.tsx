@@ -99,6 +99,14 @@ export default function DharoharHomePage() {
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
+                href="/studio"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 px-5 py-3 rounded-2xl text-xs font-black transition-all shadow-lg shadow-amber-500/30 hover:scale-105 active:scale-95"
+              >
+                <Sparkles className="w-4 h-4 fill-current" />
+                <span>AI 3D Monument Studio</span>
+              </Link>
+
+              <Link
                 href="/epigrapher"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-5 py-3 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-purple-950/50 hover:scale-105 active:scale-95"
               >
@@ -165,9 +173,46 @@ export default function DharoharHomePage() {
         />
       </section>
 
-      {/* 3. The 2 Flagship Innovation Pathways */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Pathway 1: AI Epigrapher */}
+      {/* 3. The 3 Flagship Innovation Pathways */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Pathway 1: AI 3D Monument Studio */}
+        <Link
+          href="/studio"
+          className="group relative bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border border-slate-800 hover:border-amber-500 rounded-3xl p-6 shadow-xl transition-all flex flex-col justify-between hover:shadow-amber-950/30"
+        >
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 group-hover:scale-110 transition-transform">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-bold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+                Google Photos + AI NeRF
+              </span>
+            </div>
+            <h3 className="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
+              AI Neural 3D Monument Generator Studio
+            </h3>
+            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+              Drop Google Photos, field photogrammetry or input custom history parameters. Generates a heavy, authentic 3D Digital Twin with real-time solar raytracing.
+            </p>
+
+            <div className="mt-4 bg-slate-950 p-3.5 rounded-xl border border-slate-800/80 text-xs space-y-1 text-amber-200/90 font-mono">
+              <div className="text-[11px] text-amber-400 font-sans font-medium">
+                ⚡ Synthesizes: Rani Ki Vav, Modhera Kund & Custom Monuments
+              </div>
+              <div className="text-[10px] text-slate-400">
+                PBR Ashlar Textures • 16-Sided Columns • Sanskrit Epigraphs
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between text-xs font-bold text-amber-400 pt-4 border-t border-slate-800">
+            <span>Launch 3D Studio</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+
+        {/* Pathway 2: AI Epigrapher */}
         <Link
           href="/epigrapher"
           className="group relative bg-gradient-to-br from-slate-900 via-slate-900 to-purple-950/40 border border-slate-800 hover:border-purple-500 rounded-3xl p-6 shadow-xl transition-all flex flex-col justify-between hover:shadow-purple-950/30"
@@ -202,7 +247,7 @@ export default function DharoharHomePage() {
           </div>
         </Link>
 
-        {/* Pathway 2: Expedition Reconstructor */}
+        {/* Pathway 3: Expedition Reconstructor */}
         <Link
           href="/expedition"
           className="group relative bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950/40 border border-slate-800 hover:border-sky-500 rounded-3xl p-6 shadow-xl transition-all flex flex-col justify-between hover:shadow-sky-950/30"

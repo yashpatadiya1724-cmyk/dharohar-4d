@@ -35,6 +35,7 @@ import {
 interface Dharohar3DTwinProps {
   onDepthChange?: (depthMeters: number) => void;
   onEpochChange?: (epochId: string) => void;
+  twinData?: any;
 }
 
 interface POI {
@@ -50,6 +51,7 @@ interface POI {
 export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
   onDepthChange,
   onEpochChange,
+  twinData,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -97,7 +99,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
   const autoRotateAngleRef = useRef<number>(0);
 
   // Historical Epoch Definitions
-  const epochs = [
+  const epochs = twinData?.epochs || [
     {
       id: "1063",
       year: "1063 AD",
@@ -141,7 +143,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
   ];
 
   // Architectural Hotspots (POIs)
-  const pois: POI[] = [
+  const pois: POI[] = twinData?.pois || [
     {
       id: "poi-aerial",
       name: "Aerial Axial Overview",
@@ -1022,14 +1024,14 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm md:text-base font-black text-white tracking-wide">
-                Adalaj Subterranean Stepwell 3D Digital Twin
+                {twinData?.name || "Adalaj Subterranean Stepwell 3D Digital Twin"}
               </h2>
               <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
-                Solanki Architecture
+                {twinData?.dynasty || "Solanki Architecture"}
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              5-Tier Pavilion Corridor • Octagonal Light Shaft • 24.5m Depth • Procedural Stone Masonry
+              {twinData?.tiers_count || 5}-Tier Pavilion Corridor • Octagonal Light Shaft • {twinData?.depth_meters || 24.5}m Depth • Procedural Stone Masonry
             </p>
           </div>
         </div>

@@ -12,6 +12,7 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { label: "3D Digital Twin", href: "/", icon: Landmark },
+    { label: "AI 3D Studio", href: "/studio", icon: Sparkles },
     { label: "AI Epigrapher", href: "/epigrapher", icon: FileText },
     { label: "Expedition GIS", href: "/expedition", icon: Compass },
   ];
