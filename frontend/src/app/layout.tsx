@@ -1,14 +1,19 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { Navbar } from "@/components/Navbar";
 import { BottomNav } from "@/components/BottomNav";
 
+export const viewport: Viewport = {
+  themeColor: "#1B7F4B",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "LiFE Pulse — Mission LiFE Citizen Companion",
   description: "Personal Sustainability Companion & GEDA Live Ward Impact Dashboard",
   manifest: "/manifest.json",
-  themeColor: "#1B7F4B",
 };
 
 export default function RootLayout({
@@ -35,6 +40,17 @@ export default function RootLayout({
             </main>
             <BottomNav />
           </div>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                if ('serviceWorker' in navigator) {
+                  window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').catch(function() {});
+                  });
+                }
+              `,
+            }}
+          />
         </LanguageProvider>
       </body>
     </html>

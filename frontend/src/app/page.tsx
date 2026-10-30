@@ -176,33 +176,33 @@ export default function TodayPage() {
 
         {/* Footprint Mini Counter Bar */}
         <div className="grid grid-cols-3 gap-2 mt-6 pt-5 border-t border-white/10 text-center">
-          <div className="bg-white/5 rounded-xl py-2 px-1">
-            <div className="text-xs text-lifepulse-200 font-medium flex items-center justify-center gap-1">
+          <Link href="/peak" className="bg-white/5 hover:bg-white/10 transition-colors rounded-xl py-2 px-1 block group">
+            <div className="text-xs text-lifepulse-200 font-medium flex items-center justify-center gap-1 group-hover:text-amber-300">
               <Zap className="w-3 h-3 text-amber-300" />
               <span>Electricity</span>
             </div>
             <div className="text-base font-bold mt-0.5">
               {scoreData?.kwh_month ?? 210} <span className="text-xs font-normal">kWh/mo</span>
             </div>
-          </div>
-          <div className="bg-white/5 rounded-xl py-2 px-1">
-            <div className="text-xs text-lifepulse-200 font-medium flex items-center justify-center gap-1">
+          </Link>
+          <Link href="/simulate" className="bg-white/5 hover:bg-white/10 transition-colors rounded-xl py-2 px-1 block group">
+            <div className="text-xs text-lifepulse-200 font-medium flex items-center justify-center gap-1 group-hover:text-sky-300">
               <CloudSun className="w-3 h-3 text-sky-300" />
               <span>CO₂ Saved</span>
             </div>
             <div className="text-base font-bold mt-0.5">
               {scoreData?.co2_month ?? 172} <span className="text-xs font-normal">kg</span>
             </div>
-          </div>
-          <div className="bg-white/5 rounded-xl py-2 px-1">
-            <div className="text-xs text-lifepulse-200 font-medium flex items-center justify-center gap-1">
+          </Link>
+          <Link href="/water" className="bg-white/5 hover:bg-white/10 transition-colors rounded-xl py-2 px-1 block group">
+            <div className="text-xs text-lifepulse-200 font-medium flex items-center justify-center gap-1 group-hover:text-blue-300">
               <Droplet className="w-3 h-3 text-blue-300" />
               <span>Water</span>
             </div>
             <div className="text-base font-bold mt-0.5">
               12.1 <span className="text-xs font-normal">kL/mo</span>
             </div>
-          </div>
+          </Link>
         </div>
       </section>
 

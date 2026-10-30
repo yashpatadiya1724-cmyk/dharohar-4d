@@ -52,6 +52,14 @@ export const Navbar: React.FC = () => {
             <Globe className="w-3 h-3 text-slate-400 absolute right-2 pointer-events-none" />
           </div>
 
+          {/* Water Tracker Link */}
+          <Link
+            href="/water"
+            className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded-lg transition-colors"
+          >
+            Water
+          </Link>
+
           {/* Bill OCR Link */}
           <Link
             href="/bill"
