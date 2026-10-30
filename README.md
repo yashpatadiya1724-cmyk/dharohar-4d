@@ -116,6 +116,7 @@ npm install
 npm run dev
 ```
 * Dharohar 4D Main Platform: `http://localhost:3000`
+* Autonomous AI 3D Monument Studio: `http://localhost:3000/studio`
 * 3D Subterranean Stepwell Twin: `http://localhost:3000/twin`
 * AI Stone Epigrapher: `http://localhost:3000/epigrapher`
 * Explorer Expedition GIS: `http://localhost:3000/expedition`
@@ -126,4 +127,4 @@ npm run dev
 - **Hackathon Track:** Track 2: Culture & Digital Heritage (HC26-CULT01)
 - **Organization:** Blithchron '27, IIT Gandhinagar
 - **Target Beneficiaries:** Cultural researchers, academic institutions, heritage tourism sector, and digital archivists.
-- **Repository:** [https://github.com/yashpatadiya1724-cmyk/lifepulse](https://github.com/yashpatadiya1724-cmyk/lifepulse)
+- **Repository:** [https://github.com/yashpatadiya1724-cmyk/dharohar-4d](https://github.com/yashpatadiya1724-cmyk/dharohar-4d)

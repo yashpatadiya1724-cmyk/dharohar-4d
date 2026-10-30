@@ -1,11 +1,11 @@
 {
-  "name": "LiFE Pulse — Personal Sustainability Companion",
-  "short_name": "LiFE Pulse",
-  "description": "Mission LiFE Citizen Engagement App & GEDA Impact Ledger",
+  "name": "Dharohar 4D — Neural Heritage Digital Twin & Ancient Epigraphy Engine",
+  "short_name": "Dharohar 4D",
+  "description": "Autonomous AI Neural 3D Digital Twin & Ancient Epigraphy Engine for Indian Cultural Heritage",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1B7F4B",
+  "background_color": "#060913",
+  "theme_color": "#f59e0b",
   "icons": [
     {
       "src": "/icon.png",
