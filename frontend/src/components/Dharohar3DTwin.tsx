@@ -380,7 +380,383 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     const totalDepth = twinData?.depth_meters ? Math.max(6, Math.min(38, twinData.depth_meters)) : 24.5;
     const geomType = twinData?.geometry_type || "stepwell_linear";
 
-    if (geomType === "monolithic_rockcut") {
+    if (geomType === "himalayan_shikhara") {
+      // -----------------------------------------------------------------------
+      // ARCHETYPE 0: HIMALAYAN MOUNTAIN TEMPLE (Kedarnath, Badrinath, Tungnath)
+      // High-altitude Garhwal Himalayan stone temple amidst snow-capped peaks
+      // -----------------------------------------------------------------------
+      // A. Snow-Capped Himalayan Mountain Range in Background
+      const mountainMat = new THREE.MeshStandardMaterial({
+        color: 0x475569, // dark slate rock
+        roughness: 0.95,
+      });
+      const snowMat = new THREE.MeshStandardMaterial({
+        color: 0xf8fafc, // pure mountain snow
+        roughness: 0.8,
+      });
+
+      // Majestic Himalayan Peaks behind Kedarnath
+      const peaks = [
+        { x: -38, z: -55, h: 48, r: 24 },
+        { x: -14, z: -65, h: 58, r: 28 }, // Kedarnath Peak / Kedar Dome
+        { x: 18, z: -60, h: 52, r: 26 },
+        { x: 42, z: -52, h: 44, r: 22 },
+        { x: -50, z: -35, h: 36, r: 18 },
+        { x: 50, z: -35, h: 38, r: 20 },
+      ];
+
+      peaks.forEach((p) => {
+        const peakGeo = new THREE.ConeGeometry(p.r, p.h, 7);
+        const peak = new THREE.Mesh(peakGeo, mountainMat);
+        peak.position.set(p.x, p.h / 2, p.z);
+        peak.receiveShadow = true;
+        structureGroup.add(peak);
+
+        const snowGeo = new THREE.ConeGeometry(p.r * 0.45, p.h * 0.42, 7);
+        const snow = new THREE.Mesh(snowGeo, snowMat);
+        snow.position.set(p.x, p.h * 0.79, p.z);
+        structureGroup.add(snow);
+      });
+
+      // B. Ground Alpine Valley Plinth
+      const groundGeo = new THREE.PlaneGeometry(180, 180);
+      const groundMat = new THREE.MeshStandardMaterial({
+        map: sandstoneTex,
+        color: 0x334155, // cold slate valley floor
+        roughness: 0.92,
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      structureGroup.add(ground);
+
+      // C. Elevated Heavy Grey Granite Temple Plinth (Jagati)
+      const plinthGeo = new THREE.BoxGeometry(19, 2.4, 32);
+      const plinthMat = new THREE.MeshStandardMaterial({
+        map: sandstoneTex,
+        color: 0x475569, // heavy grey ashlar stone
+        roughness: 0.88,
+      });
+      const plinth = new THREE.Mesh(plinthGeo, plinthMat);
+      plinth.position.set(0, 1.2, 0);
+      plinth.castShadow = true;
+      plinth.receiveShadow = true;
+      structureGroup.add(plinth);
+
+      // D. Main Garbhagriha (Sanctum) & Towering Grey Stone Shikhara
+      const sanctumBaseGeo = new THREE.BoxGeometry(11, 7.5, 12);
+      const sanctumBase = new THREE.Mesh(sanctumBaseGeo, friezeMat);
+      sanctumBase.position.set(0, 5.95, -7);
+      sanctumBase.castShadow = true;
+      sanctumBase.receiveShadow = true;
+      structureGroup.add(sanctumBase);
+
+      // Stepped Pyramid Shikhara Tower (5 tiers)
+      for (let lvl = 0; lvl < 5; lvl++) {
+        const sw = 10.2 - lvl * 1.7;
+        const sl = 11.2 - lvl * 1.7;
+        const sh = 2.4;
+        const spLvlGeo = new THREE.BoxGeometry(sw, sh, sl);
+        const spLvl = new THREE.Mesh(spLvlGeo, friezeMat);
+        spLvl.position.set(0, 9.7 + lvl * sh + sh / 2, -7);
+        spLvl.castShadow = true;
+        structureGroup.add(spLvl);
+
+        const cornGeo = new THREE.BoxGeometry(sw + 0.5, 0.35, sl + 0.5);
+        const corn = new THREE.Mesh(cornGeo, stoneMat);
+        corn.position.set(0, 9.7 + lvl * sh + sh, -7);
+        structureGroup.add(corn);
+      }
+
+      // Massive Ribbed Stone Amalaka & Golden Kalasha
+      const amalakaGeo = new THREE.CylinderGeometry(2.4, 2.4, 1.4, 20);
+      const amalaka = new THREE.Mesh(amalakaGeo, friezeMat);
+      amalaka.position.set(0, 9.7 + 5 * 2.4 + 0.8, -7);
+      amalaka.castShadow = true;
+      structureGroup.add(amalaka);
+
+      const kalashaGeo = new THREE.SphereGeometry(1.5, 16, 16);
+      const kalasha = new THREE.Mesh(kalashaGeo, goldIconMat);
+      kalasha.position.set(0, 9.7 + 5 * 2.4 + 2.4, -7);
+      kalasha.castShadow = true;
+      structureGroup.add(kalasha);
+
+      // E. Front Sabha Mandapa with Sloping Snow-Shedding Gabled Roof
+      const mandapaBaseGeo = new THREE.BoxGeometry(13.2, 5.8, 14);
+      const mandapaBase = new THREE.Mesh(mandapaBaseGeo, plinthMat);
+      mandapaBase.position.set(0, 5.1, 5);
+      mandapaBase.castShadow = true;
+      structureGroup.add(mandapaBase);
+
+      const roofLGeo = new THREE.BoxGeometry(7.8, 0.6, 15);
+      const roofL = new THREE.Mesh(roofLGeo, friezeMat);
+      roofL.position.set(-3.2, 9.2, 5);
+      roofL.rotation.z = 0.55; // Sloped down to shed snow
+      roofL.castShadow = true;
+      structureGroup.add(roofL);
+
+      const roofRGeo = new THREE.BoxGeometry(7.8, 0.6, 15);
+      const roofR = new THREE.Mesh(roofRGeo, friezeMat);
+      roofR.position.set(3.2, 9.2, 5);
+      roofR.rotation.z = -0.55; // Sloped down to shed snow
+      roofR.castShadow = true;
+      structureGroup.add(roofR);
+
+      // Front Carved Wooden Entrance Portal with Brass Trim
+      const portalGeo = new THREE.BoxGeometry(3.6, 5.0, 0.8);
+      const portal = new THREE.Mesh(portalGeo, goldIconMat);
+      portal.position.set(0, 4.7, 12.1);
+      structureGroup.add(portal);
+
+      const doorOpeningGeo = new THREE.BoxGeometry(2.4, 3.8, 0.9);
+      const doorOpeningMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+      const doorOpening = new THREE.Mesh(doorOpeningGeo, doorOpeningMat);
+      doorOpening.position.set(0, 4.1, 12.15);
+      structureGroup.add(doorOpening);
+
+      // F. Sacred Seated Stone Nandi Bull Facing the Shrine Entrance
+      const nandiPlinthGeo = new THREE.BoxGeometry(3.2, 1.2, 4.4);
+      const nandiPlinth = new THREE.Mesh(nandiPlinthGeo, stoneMat);
+      nandiPlinth.position.set(0, 3.0, 18.5);
+      nandiPlinth.castShadow = true;
+      structureGroup.add(nandiPlinth);
+
+      const nandiBodyGeo = new THREE.BoxGeometry(1.8, 1.6, 3.0);
+      const nandiBody = new THREE.Mesh(nandiBodyGeo, friezeMat);
+      nandiBody.position.set(0, 4.4, 18.5);
+      nandiBody.castShadow = true;
+      structureGroup.add(nandiBody);
+
+      const nandiHumpGeo = new THREE.SphereGeometry(0.7, 12, 12);
+      const nandiHump = new THREE.Mesh(nandiHumpGeo, friezeMat);
+      nandiHump.position.set(0, 5.4, 19.2);
+      structureGroup.add(nandiHump);
+
+      const nandiHeadGeo = new THREE.BoxGeometry(1.2, 1.1, 1.4);
+      const nandiHead = new THREE.Mesh(nandiHeadGeo, friezeMat);
+      nandiHead.position.set(0, 4.8, 16.8); // facing towards the door
+      structureGroup.add(nandiHead);
+
+      const garlandGeo = new THREE.TorusGeometry(0.75, 0.12, 8, 16);
+      const garland = new THREE.Mesh(garlandGeo, goldIconMat);
+      garland.position.set(0, 4.6, 17.5);
+      structureGroup.add(garland);
+
+      // G. Monumental Golden Trishul (Trident) & Damru Beside Portal
+      const trishulStaffGeo = new THREE.CylinderGeometry(0.12, 0.15, 12, 8);
+      const trishulStaff = new THREE.Mesh(trishulStaffGeo, goldIconMat);
+      trishulStaff.position.set(5.4, 8.2, 13.5);
+      trishulStaff.castShadow = true;
+      pillarsGroup.add(trishulStaff);
+
+      [-0.6, 0, 0.6].forEach((tx, idx) => {
+        const prongGeo = new THREE.ConeGeometry(0.12, idx === 1 ? 1.6 : 1.2, 8);
+        const prong = new THREE.Mesh(prongGeo, goldIconMat);
+        prong.position.set(5.4 + tx, 14.8 + (idx === 1 ? 0.3 : 0), 13.5);
+        pillarsGroup.add(prong);
+      });
+
+      const damruGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.6, 8);
+      const damru = new THREE.Mesh(damruGeo, goldIconMat);
+      damru.position.set(5.4, 13.2, 13.5);
+      pillarsGroup.add(damru);
+
+      // H. Saffron Temple Prayer Flag (Dhwaja) on Tall Mast
+      const mastGeo = new THREE.CylinderGeometry(0.1, 0.12, 14, 8);
+      const mast = new THREE.Mesh(mastGeo, stoneMat);
+      mast.position.set(-5.4, 9.2, 13.5);
+      structureGroup.add(mast);
+
+      const flagGeo = new THREE.ConeGeometry(1.2, 2.4, 3);
+      const flagMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
+      const flag = new THREE.Mesh(flagGeo, flagMat);
+      flag.position.set(-5.4, 15.2, 14.2);
+      flag.rotation.z = Math.PI / 2;
+      structureGroup.add(flag);
+
+      // I. Ceremonial Flight of Front Granite Steps
+      for (let st = 0; st < 6; st++) {
+        const stepGeo = new THREE.BoxGeometry(10, 0.42, 0.75);
+        const step = new THREE.Mesh(stepGeo, plinthMat);
+        step.position.set(0, 2.1 - st * 0.42, 16.2 + st * 0.7);
+        step.castShadow = true;
+        structureGroup.add(step);
+      }
+    } else if (geomType === "nagara_shikhara") {
+      // -----------------------------------------------------------------------
+      // ARCHETYPE: CLASSICAL NAGARA MOUNTAIN SPIRE (Ayodhya Ram Mandir, Somnath, Dwarka)
+      // Curvilinear shikhara with cascading urushringas, Jagati plinth & Kirti Torana
+      // -----------------------------------------------------------------------
+      const groundGeo = new THREE.PlaneGeometry(160, 160);
+      const groundMat = new THREE.MeshStandardMaterial({
+        map: sandstoneTex,
+        color: sandstoneHex,
+        roughness: 0.88,
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      structureGroup.add(ground);
+
+      // Grand Carved Jagati Plinth
+      const jagatiGeo = new THREE.BoxGeometry(20, 2.8, 36);
+      const jagati = new THREE.Mesh(jagatiGeo, stoneMat);
+      jagati.position.set(0, 1.4, -2);
+      jagati.castShadow = true;
+      jagati.receiveShadow = true;
+      structureGroup.add(jagati);
+
+      // Main Garbhagriha & Curvilinear Nagara Shikhara (Latina/Shekhari Style)
+      const sanctumGeo = new THREE.BoxGeometry(12, 8, 12);
+      const sanctum = new THREE.Mesh(sanctumGeo, friezeMat);
+      sanctum.position.set(0, 6.8, -10);
+      sanctum.castShadow = true;
+      structureGroup.add(sanctum);
+
+      // 6 Tiers of Curvilinear Urushringa Spires
+      for (let lvl = 0; lvl < 6; lvl++) {
+        const nw = 11.2 - lvl * 1.6;
+        const nl = 11.2 - lvl * 1.6;
+        const nh = 2.6;
+        const nLvlGeo = new THREE.BoxGeometry(nw, nh, nl);
+        const nLvl = new THREE.Mesh(nLvlGeo, friezeMat);
+        nLvl.position.set(0, 10.8 + lvl * nh + nh / 2, -10);
+        nLvl.castShadow = true;
+        structureGroup.add(nLvl);
+
+        // Cascading miniature corner spires (Urushringas)
+        [-nw / 2 + 0.6, nw / 2 - 0.6].forEach((ux) => {
+          [-nl / 2 + 0.6, nl / 2 - 0.6].forEach((uz) => {
+            const uGeo = new THREE.ConeGeometry(0.7, 1.8, 4);
+            const uSpire = new THREE.Mesh(uGeo, friezeMat);
+            uSpire.position.set(ux, 10.8 + lvl * nh + nh, -10 + uz);
+            uSpire.rotation.y = Math.PI / 4;
+            structureGroup.add(uSpire);
+          });
+        });
+      }
+
+      // Massive Ribbed Amalaka & Golden Kalasha
+      const amalakaGeo = new THREE.CylinderGeometry(2.5, 2.5, 1.6, 24);
+      const amalaka = new THREE.Mesh(amalakaGeo, friezeMat);
+      amalaka.position.set(0, 10.8 + 6 * 2.6 + 0.9, -10);
+      amalaka.castShadow = true;
+      structureGroup.add(amalaka);
+
+      const kalashaGeo = new THREE.SphereGeometry(1.6, 16, 16);
+      const kalasha = new THREE.Mesh(kalashaGeo, goldIconMat);
+      kalasha.position.set(0, 10.8 + 6 * 2.6 + 2.7, -10);
+      kalasha.castShadow = true;
+      structureGroup.add(kalasha);
+
+      // Gudhamandapa (Hall with Stepped Pyramidal Samvarana Roof)
+      const gudhaGeo = new THREE.BoxGeometry(14, 6.5, 14);
+      const gudha = new THREE.Mesh(gudhaGeo, stoneMat);
+      gudha.position.set(0, 6.0, 3);
+      gudha.castShadow = true;
+      structureGroup.add(gudha);
+
+      for (let s = 0; s < 4; s++) {
+        const sw = 13.5 - s * 2.2;
+        const sl = 13.5 - s * 2.2;
+        const sGeo = new THREE.BoxGeometry(sw, 1.4, sl);
+        const sRoof = new THREE.Mesh(sGeo, friezeMat);
+        sRoof.position.set(0, 9.9 + s * 1.4, 3);
+        sRoof.castShadow = true;
+        structureGroup.add(sRoof);
+      }
+
+      // Kirti Torana (Arch of Glory) at Entrance
+      const toranaGeo = new THREE.TorusGeometry(3.6, 0.38, 12, 32, Math.PI);
+      const torana = new THREE.Mesh(toranaGeo, goldIconMat);
+      torana.position.set(0, 4.6, 16);
+      torana.castShadow = true;
+      structureGroup.add(torana);
+
+      // Front Flight of Steps
+      for (let st = 0; st < 6; st++) {
+        const stepGeo = new THREE.BoxGeometry(9, 0.45, 0.8);
+        const step = new THREE.Mesh(stepGeo, stoneMat);
+        step.position.set(0, 2.5 - st * 0.45, 15.5 + st * 0.75);
+        step.castShadow = true;
+        structureGroup.add(step);
+      }
+    } else if (geomType === "dravidian_gopuram") {
+      // -----------------------------------------------------------------------
+      // ARCHETYPE: MONUMENTAL DRAVIDIAN GOPURAM (Meenakshi Amman, Madurai, Rameswaram)
+      // Soaring 7-tier pyramidal Gopuram gateway, thousand-pillar Yali hall & Vimana
+      // -----------------------------------------------------------------------
+      const groundGeo = new THREE.PlaneGeometry(160, 160);
+      const groundMat = new THREE.MeshStandardMaterial({
+        map: sandstoneTex,
+        color: sandstoneHex,
+        roughness: 0.9,
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      structureGroup.add(ground);
+
+      // Monumental 7-Tier Pyramidal Gopuram Gateway (Front Entrance)
+      const gopuramBaseGeo = new THREE.BoxGeometry(16, 6, 8);
+      const gopuramBase = new THREE.Mesh(gopuramBaseGeo, stoneMat);
+      gopuramBase.position.set(0, 3, 16);
+      gopuramBase.castShadow = true;
+      structureGroup.add(gopuramBase);
+
+      // Soaring Tiers of Gopuram with Deity Friezes
+      for (let lvl = 0; lvl < 7; lvl++) {
+        const gw = 15.2 - lvl * 1.5;
+        const gl = 7.5 - lvl * 0.7;
+        const gh = 2.4;
+        const gLvlGeo = new THREE.BoxGeometry(gw, gh, gl);
+        const gLvl = new THREE.Mesh(gLvlGeo, friezeMat);
+        gLvl.position.set(0, 6.0 + lvl * gh + gh / 2, 16);
+        gLvl.castShadow = true;
+        structureGroup.add(gLvl);
+      }
+
+      // Barrel-Vaulted Shala Crown with 5 Golden Kalashams
+      const shalaGeo = new THREE.CylinderGeometry(1.6, 1.6, 6.2, 12, 1, false, 0, Math.PI);
+      const shala = new THREE.Mesh(shalaGeo, friezeMat);
+      shala.position.set(0, 6.0 + 7 * 2.4 + 1.2, 16);
+      shala.rotation.z = Math.PI / 2;
+      structureGroup.add(shala);
+
+      for (let k = -2; k <= 2; k++) {
+        const kGeo = new THREE.SphereGeometry(0.45, 12, 12);
+        const kMesh = new THREE.Mesh(kGeo, goldIconMat);
+        kMesh.position.set(k * 1.2, 6.0 + 7 * 2.4 + 2.8, 16);
+        structureGroup.add(kMesh);
+      }
+
+      // Thousand-Pillar Hypostyle Hall (Pillared Arcade behind Gopuram)
+      for (let px = -6; px <= 6; px += 3) {
+        for (let pz = -2; pz <= 8; pz += 3.2) {
+          const yaliColGeo = new THREE.CylinderGeometry(0.35, 0.45, 5.5, 12);
+          const yaliCol = new THREE.Mesh(yaliColGeo, friezeMat);
+          yaliCol.position.set(px, 2.75, pz);
+          yaliCol.castShadow = true;
+          pillarsGroup.add(yaliCol);
+        }
+      }
+
+      // Inner Sanctum Vimana Tower
+      const vimanaGeo = new THREE.BoxGeometry(10, 8, 10);
+      const vimana = new THREE.Mesh(vimanaGeo, stoneMat);
+      vimana.position.set(0, 4, -10);
+      vimana.castShadow = true;
+      structureGroup.add(vimana);
+
+      const vimDomeGeo = new THREE.SphereGeometry(2.8, 16, 16);
+      const vimDome = new THREE.Mesh(vimDomeGeo, goldIconMat);
+      vimDome.position.set(0, 10.5, -10);
+      vimDome.castShadow = true;
+      structureGroup.add(vimDome);
+    } else if (geomType === "monolithic_rockcut") {
       // -----------------------------------------------------------------------
       // ARCHETYPE 1: KAILASA MONOLITHIC ROCK-CUT TEMPLE (Ellora Cave 16)
       // Carved top-down out of a single mountain cliff; 200,000 tonnes of basalt
@@ -1313,7 +1689,31 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     const clock = new THREE.Clock();
 
     const getTourWaypoints = () => {
-      if (geomType === "monolithic_rockcut") {
+      if (geomType === "himalayan_shikhara") {
+        return [
+          { pos: new THREE.Vector3(0, 4, 26), look: new THREE.Vector3(0, 4, 16) },
+          { pos: new THREE.Vector3(12, 8, 12), look: new THREE.Vector3(5, 10, 13) },
+          { pos: new THREE.Vector3(16, 14, -4), look: new THREE.Vector3(0, 12, -7) },
+          { pos: new THREE.Vector3(-14, 8, 6), look: new THREE.Vector3(0, 7, 5) },
+          { pos: new THREE.Vector3(26, 22, 28), look: new THREE.Vector3(0, 10, -20) },
+        ];
+      } else if (geomType === "nagara_shikhara") {
+        return [
+          { pos: new THREE.Vector3(0, 5, 26), look: new THREE.Vector3(0, 4, 16) },
+          { pos: new THREE.Vector3(16, 8, 6), look: new THREE.Vector3(0, 6, 2) },
+          { pos: new THREE.Vector3(18, 16, -6), look: new THREE.Vector3(0, 12, -6) },
+          { pos: new THREE.Vector3(-14, 4, 0), look: new THREE.Vector3(0, 2, 0) },
+          { pos: new THREE.Vector3(26, 22, 28), look: new THREE.Vector3(0, 6, 0) },
+        ];
+      } else if (geomType === "dravidian_gopuram") {
+        return [
+          { pos: new THREE.Vector3(0, 18, 28), look: new THREE.Vector3(0, 12, 14) },
+          { pos: new THREE.Vector3(16, 12, -6), look: new THREE.Vector3(0, 8, -8) },
+          { pos: new THREE.Vector3(8, 4, 4), look: new THREE.Vector3(0, 3, 0) },
+          { pos: new THREE.Vector3(-14, 4, 0), look: new THREE.Vector3(0, 2, 0) },
+          { pos: new THREE.Vector3(32, 26, 32), look: new THREE.Vector3(0, 8, 0) },
+        ];
+      } else if (geomType === "monolithic_rockcut") {
         return [
           { pos: new THREE.Vector3(26, 12, 28), look: new THREE.Vector3(0, -6, 8) },
           { pos: new THREE.Vector3(14, -6, 18), look: new THREE.Vector3(-9, -2, 14) },

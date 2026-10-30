@@ -402,7 +402,10 @@ export default function TwinStudioPage() {
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <span className="text-xs text-slate-400 font-medium">Try instantly:</span>
           {[
+            { label: "🏔️ Kedarnath Temple", q: "Kedarnath Temple" },
             { label: "👑 Rani Ki Vav", q: "Rani Ki Vav" },
+            { label: "🔱 Somnath Temple", q: "Somnath Temple" },
+            { label: "🛕 Meenakshi Temple", q: "Meenakshi Amman Temple" },
             { label: "🏔️ Kailasa Temple (Ellora)", q: "Kailasa Rock-Cut Temple, Cave 16" },
             { label: "🛞 Konark Sun Temple", q: "Konark Sun Temple" },
             { label: "☀️ Modhera Sun Temple", q: "Modhera Sun Temple & Surya Kund" },

@@ -469,7 +469,151 @@ def generate_custom_3d_twin(req: GenerateTwinRequest):
 
     # 4. Generate Bespoke 3D Hotspots (POIs) tailored to Architecture Type
     tier_height = depth / tiers
-    if geom_type == "monolithic_rockcut":
+    if geom_type == "himalayan_shikhara":
+        generated_pois = [
+            {
+                "id": f"poi-{name[:3].lower()}-nandi",
+                "name": "Sacred Seated Nandi Bull & Entrance Portal",
+                "tier": "Courtyard Approach",
+                "elevation": "2.4m",
+                "description": "Life-sized stone Nandi Bull seated on an elevated plinth facing the inner sanctum, adorned with traditional brass bells.",
+                "camPos": [0, 4, 24],
+                "lookAt": [0, 3, 16]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-shikhara",
+                "name": "Main Garbhagriha & Himalayan Grey Stone Spire",
+                "tier": "Sanctum Apex",
+                "elevation": "18.5m",
+                "description": "Heavy stone masonry tower built with horizontal interlocking grey ashlar blocks, crowned with ribbed Amalaka and golden Kalasha.",
+                "camPos": [16, 14, -4],
+                "lookAt": [0, 10, -7]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-roof",
+                "name": "Gabled Sabha Mandapa Snow-Shedding Roof",
+                "tier": "Assembly Roof",
+                "elevation": "8.5m",
+                "description": "Steeply pitched gabled stone-slab roof engineered to shed massive winter Himalayan snowfalls above 3,500m altitude.",
+                "camPos": [-12, 8, 6],
+                "lookAt": [0, 6, 5]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-trishul",
+                "name": "Golden Trishul (Trident) & Saffron Dhwaja",
+                "tier": "Sanctuary Portal",
+                "elevation": "6.0m",
+                "description": "Monumental 10-meter brass Trishul with Damru and tall flagpole bearing the sacred saffron temple flag.",
+                "camPos": [10, 6, 14],
+                "lookAt": [5, 6, 13]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-peaks",
+                "name": "Snow-Capped Himalayan Mountain Range Panorama",
+                "tier": "360° Alpine Horizon",
+                "elevation": "32.0m",
+                "description": f"Aerial panoramic view of {name} framed by soaring glaciated Himalayan mountain peaks in the Garhwal valley.",
+                "camPos": [28, 22, 32],
+                "lookAt": [0, 8, -20]
+            }
+        ]
+    elif geom_type == "nagara_shikhara":
+        generated_pois = [
+            {
+                "id": f"poi-{name[:3].lower()}-torana",
+                "name": "Kirti Torana Ceremonial Entrance Arch",
+                "tier": "Approach Gate",
+                "elevation": "3.8m",
+                "description": "Grand ceremonial victory gateway with cusped archways framing the approach to the elevated temple plinth.",
+                "camPos": [0, 5, 24],
+                "lookAt": [0, 4, 16]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-mandapa",
+                "name": "Gudhamandapa & Stepped Samvarana Roof",
+                "tier": "Assembly Hall",
+                "elevation": "7.5m",
+                "description": "Pyramidal stepped bell-roof assembly hall supported by intricately carved Solanki/Nagara stone columns.",
+                "camPos": [14, 8, 6],
+                "lookAt": [0, 6, 2]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-nagara",
+                "name": "Curvilinear Nagara Shikhara & Urushringas",
+                "tier": "Main Spire",
+                "elevation": "24.0m",
+                "description": "Soaring curvilinear stone shikhara adorned with miniature clustered spires cascading toward the heavens, crowned with Amalaka.",
+                "camPos": [18, 16, -6],
+                "lookAt": [0, 12, -6]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-jagati",
+                "name": "Elevated Jagati Plinth & Sculptural Friezes",
+                "tier": "Plinth Terrace",
+                "elevation": "2.2m",
+                "description": "High stone terrace platform embellished with continuous relief friezes of celestial dancers, elephants, and sacred motifs.",
+                "camPos": [-14, 4, 0],
+                "lookAt": [0, 2, 0]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-aerial",
+                "name": "Nagara Temple Sanctuary Aerial Survey",
+                "tier": "360° Aerial",
+                "elevation": "28.0m",
+                "description": f"Axial alignment of {name} mapped along the sacred cardinal directions, showing the stepped geometric harmony.",
+                "camPos": [28, 22, 28],
+                "lookAt": [0, 6, 0]
+            }
+        ]
+    elif geom_type == "dravidian_gopuram":
+        generated_pois = [
+            {
+                "id": f"poi-{name[:3].lower()}-gopuram",
+                "name": "Soaring 7-Tier Pyramidal Gopuram Gateway",
+                "tier": "Monumental Gateway",
+                "elevation": "22.0m",
+                "description": "Majestic multi-storey pyramidal Gopuram covered in thousands of intricately sculpted deities and crowned with golden Kalashams.",
+                "camPos": [0, 18, 28],
+                "lookAt": [0, 12, 14]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-vimana",
+                "name": "Central Vimana Sanctum & Golden Dome",
+                "tier": "Sanctum Apex",
+                "elevation": "14.0m",
+                "description": "Pyramidal stone Vimana towering over the inner sanctum, crowned with an auspicious golden dome.",
+                "camPos": [16, 12, -6],
+                "lookAt": [0, 8, -8]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-corridor",
+                "name": "Thousand-Pillar Hypostyle Yali Corridor",
+                "tier": "Pillared Arcade",
+                "elevation": "3.5m",
+                "description": "Colonnaded grand hall featuring monolithic stone pillars sculpted with rampant mythical Yali beasts.",
+                "camPos": [8, 4, 4],
+                "lookAt": [0, 3, 0]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-tank",
+                "name": "Sacred Temple Water Teppakulam",
+                "tier": "Temple Tank",
+                "elevation": "1.0m",
+                "description": "Sacred rectangular water reservoir framed by pillared ghats where festival deities are floated during float festivals.",
+                "camPos": [-14, 4, 0],
+                "lookAt": [0, 2, 0]
+            },
+            {
+                "id": f"poi-{name[:3].lower()}-survey",
+                "name": "Grand Dravidian Complex Aerial Survey",
+                "tier": "360° Aerial",
+                "elevation": "34.0m",
+                "description": f"High-altitude aerial survey of {name} illustrating concentric enclosure prakaram walls and four towering gopurams.",
+                "camPos": [32, 26, 32],
+                "lookAt": [0, 8, 0]
+            }
+        ]
+    elif geom_type == "monolithic_rockcut":
         generated_pois = [
             {
                 "id": f"poi-{name[:3].lower()}-stambha",
@@ -1004,7 +1148,7 @@ def autonomous_monument_research_and_synthesis(req: AutonomousResearchRequest):
             "dynasty": "Chandela Rajput Dynasty (King Vidyadhara)",
             "period": "1030 AD",
             "architectural_style": "Nagara Mountain-Spire Fractal Architecture",
-            "geometry_type": "chariot_mandapa",
+            "geometry_type": "nagara_shikhara",
             "depth_meters": 20.0,
             "tiers_count": 5,
             "stone_material": "dhrangadhra_gold",
@@ -1022,12 +1166,116 @@ def autonomous_monument_research_and_synthesis(req: AutonomousResearchRequest):
             "epigraph_iast": "śrī candela nṛpati vidyādhara... kandariyā mahādeva mandira pratiṣṭhāpitam ||",
             "hindi_trans": "चन्देल नरेश विद्याधर द्वारा पर्वत-शिखर सदृश भव्य कंदरिया महादेव मन्दिर की प्रतिष्ठा संपन्न हुई।",
             "english_trans": "By Chandela sovereign Vidyadhara, this mountain-like fractal sanctuary of Lord Shiva was consecrated to reflect cosmic beauty."
+        },
+        "kedarnath": {
+            "name": "Kedarnath Temple (केदारनाथ मन्दिर)",
+            "location": "Rudraprayag District, Garhwal Himalayas, Uttarakhand",
+            "dynasty": "Pandava Consecration / Adi Shankara Renovation (8th Century AD)",
+            "period": "8th Century AD",
+            "architectural_style": "Himalayan Ashlar Stone Temple & Gabled Mandapa",
+            "geometry_type": "himalayan_shikhara",
+            "depth_meters": 18.0,
+            "tiers_count": 5,
+            "stone_material": "basalt_black",
+            "water_state": "dry_excavated",
+            "latitude": 30.7352,
+            "longitude": 79.0669,
+            "images": [
+                "https://upload.wikimedia.org/wikipedia/commons/f/f1/Decorated_Kedarnath_Temple_During_Chardham_Yatra.jpg",
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/56/Kedarnath_Temple_in_Rainy_season.jpg/960px-Kedarnath_Temple_in_Rainy_season.jpg",
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/Devotees_at_Kedarnath_temple%2C_Uttrakhand_01.jpg/960px-Devotees_at_Kedarnath_temple%2C_Uttrakhand_01.jpg",
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Kedarnath_Temple.jpg/960px-Kedarnath_Temple.jpg",
+            ],
+            "historical_lore": "One of the twelve sacred Jyotirlingas of Lord Shiva situated at an altitude of 3,583m in the Garhwal Himalayas near the Mandakini river. Constructed of massive interlocking grey granite ashlar blocks that withstand sub-zero Himalayan winters, glacial avalanches, and extreme weather for over a thousand years.",
+            "epigraph_shloka": "ॐ नमः शिवाय ! महाद्रिपार्श्वे च तटे रमन्तं... श्री केदारनाथं शरणं प्रपद्ये ॥",
+            "epigraph_iast": "om namaḥ śivāya ! mahādripārśve ca taṭe ramantaṃ... śrī kedāranāthaṃ śaraṇaṃ prapadye ||",
+            "hindi_trans": "हिमालय पर्वत की गोद में मंदाकिनी नदी के तट पर प्रतिष्ठित, भगवान शिव के ज्योतिर्लिंग स्वरूप श्री केदारनाथ जी के चरणों में हम नतमस्तक होते हैं।",
+            "english_trans": "Enshrined in the majestic Himalayas by the Mandakini river, we bow to Lord Kedarnath, the eternal Jyotirlinga granting spiritual liberation."
+        },
+        "badrinath": {
+            "name": "Badrinath Temple (बद्रीनाथ मन्दिर)",
+            "location": "Chamoli District, Garhwal Himalayas, Uttarakhand",
+            "dynasty": "Garhwal Kingdom / Adi Shankaracharya",
+            "period": "8th Century AD",
+            "architectural_style": "Himalayan Conical Gabled Spire",
+            "geometry_type": "himalayan_shikhara",
+            "depth_meters": 16.0,
+            "tiers_count": 5,
+            "stone_material": "dhrangadhra_gold",
+            "water_state": "lotus_pool",
+            "latitude": 30.7433,
+            "longitude": 79.4938,
+            "images": [
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a2/Badrinath_temple%2C_Uttarakhand%2C_India.jpg/960px-Badrinath_temple%2C_Uttarakhand%2C_India.jpg",
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Badrinath_Temple_front_view.jpg/960px-Badrinath_Temple_front_view.jpg",
+                "https://upload.wikimedia.org/wikipedia/commons/f/f1/Decorated_Kedarnath_Temple_During_Chardham_Yatra.jpg",
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/56/Kedarnath_Temple_in_Rainy_season.jpg/960px-Kedarnath_Temple_in_Rainy_season.jpg",
+            ],
+            "historical_lore": "One of the Char Dham pilgrimage sites, dedicated to Lord Vishnu as Badrinarayan, located at 3,133m along the Alaknanda river, featuring traditional Himalayan brightly-colored arched facades and a conical stone shikhara.",
+            "epigraph_shloka": "ॐ नमो नारायणाय ! बदरीवन संवासे... श्री बद्रीनाथाय नमः ॥",
+            "epigraph_iast": "om namo nārāyaṇāya ! badarīvana saṃvāse... śrī badrīnāthāya namaḥ ||",
+            "hindi_trans": "बद्रीवन में विराजमान भगवान नारायण, समस्त जगत के पालनहार श्री बद्रीनाथ जी को हमारा कोटि-कोटि नमन।",
+            "english_trans": "To Lord Narayana dwelling in the sacred Badari grove, preserver of the universe, we offer our humble obeisance."
+        },
+        "somnath": {
+            "name": "Somnath Jyotirlinga Temple (सोमनाथ मन्दिर)",
+            "location": "Prabhas Patan, Veraval, Saurashtra Coast, Gujarat",
+            "dynasty": "Chaulukya / Solanki Dynasty Architecture",
+            "period": "Reconstructed Kailash Mahameru Prasad",
+            "architectural_style": "Kailash Mahameru Prasad Coastal Nagara Spire",
+            "geometry_type": "nagara_shikhara",
+            "depth_meters": 22.0,
+            "tiers_count": 5,
+            "stone_material": "dhrangadhra_gold",
+            "water_state": "sacred_aquifer",
+            "latitude": 20.8880,
+            "longitude": 70.4012,
+            "images": [
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/Prime_Minister_of_Bharat%2C_Shri_Narendra_Modi_visiting_Somnath_Temple%2C_in_Gujarat.jpg/960px-Prime_Minister_of_Bharat%2C_Shri_Narendra_Modi_visiting_Somnath_Temple%2C_in_Gujarat.jpg",
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/Prime_Minister_of_Bharat%2C_Shri_Narendra_Modi_offering_prayers_at_Somnath_Temple%2C_in_Gujarat.jpg/960px-Prime_Minister_of_Bharat%2C_Shri_Narendra_Modi_offering_prayers_at_Somnath_Temple%2C_in_Gujarat.jpg",
+                "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800&q=80",
+                "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=800&q=80",
+            ],
+            "historical_lore": "First among the twelve sacred Aadi Jyotirlingas of Lord Shiva situated at the Arabian Sea shore. Built in the grand Kailash Mahameru Prasad style with a 50-meter curvilinear Nagara shikhara, soaring flagmast, and uninterrupted sea meridian to Antarctica (Baan Stambha).",
+            "epigraph_shloka": "सौराष्ट्रदेशे विशदेऽतिरम्ये... ज्योतिर्मयं चन्द्रकलावतंसम्... सोमनाथं शरणं प्रपद्ये ॥",
+            "epigraph_iast": "saurāṣṭradeśe viśade'tiramye... jyotirmayaṃ candrakalāvataṃsam... somanāthaṃ śaraṇaṃ prapadye ||",
+            "hindi_trans": "अति रमणीय सौराष्ट्र देश में प्रभास तीर्थ पर विराजमान, चन्द्रकला से सुशोभित प्रथम ज्योतिर्लिंग श्री सोमनाथ जी की हम शरण लेते हैं।",
+            "english_trans": "In the sacred land of Saurashtra by the western sea, we seek refuge in Lord Somnath, the primordial Jyotirlinga adorned with the crescent moon."
+        },
+        "meenakshi": {
+            "name": "Meenakshi Amman Temple (மீனாட்சி அம்மன் கோயில்)",
+            "location": "Madurai, Vaigai River, Tamil Nadu",
+            "dynasty": "Madurai Nayak Dynasty (King Thirumalai Nayak)",
+            "period": "1623–1655 AD",
+            "architectural_style": "Dravidian 14-Gopuram Monumental Temple",
+            "geometry_type": "dravidian_gopuram",
+            "depth_meters": 26.0,
+            "tiers_count": 5,
+            "stone_material": "dhrangadhra_gold",
+            "water_state": "lotus_pool",
+            "latitude": 9.9195,
+            "longitude": 78.1193,
+            "images": [
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/MEENAKSHI_TEMPLE-_WEST_GOPURAM.jpg/960px-MEENAKSHI_TEMPLE-_WEST_GOPURAM.jpg",
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/Madurai_Meenakshi_temple_pond.jpg/960px-Madurai_Meenakshi_temple_pond.jpg",
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Meenakshi_Temple%2C_Entrance%2C_Madurai.jpg/960px-Meenakshi_Temple%2C_Entrance%2C_Madurai.jpg",
+                "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/97/Meenakshi_Temple%2C_Madurai%2C_Gopuram.jpg/960px-Meenakshi_Temple%2C_Madurai%2C_Gopuram.jpg",
+            ],
+            "historical_lore": "World-renowned Dravidian architectural masterpiece centered around Goddess Meenakshi and Lord Sundareswarar. Features 14 towering multi-tiered Gopurams adorned with thousands of painted mythological stucco sculptures, the Golden Lotus Tank (Potramarai Kulam), and the Thousand Pillar Hall (Ayirakkal Mandapam).",
+            "epigraph_shloka": "श्री पाण्ड्यमण्डले रम्ये... मीनाक्षी सुन्द्रेश्वर मन्दिरं प्रतिष्ठापितम् ॥",
+            "epigraph_iast": "śrī pāṇḍyamaṇḍale ramye... mīnākṣī sundreśvara mandiraṃ pratiṣṭhāpitam ||",
+            "hindi_trans": "पावन पाण्ड्य देश के हृदय में माता मीनाक्षी एवं भगवान सुन्दरेश्वर के इस अलौकिक दिव्य महा-मन्दिर की प्रतिष्ठा संपन्न हुई।",
+            "english_trans": "In the sacred realm of the Pandyas, this celestial sanctuary of Goddess Meenakshi and Lord Sundareswarar was consecrated for eternal cosmic grace."
         }
     }
 
     # Match query to database or synthesize dynamic research
     matched = None
     aliases_map = {
+        "kedarnath": ["kedarnath", "kedar", "kedarnath temple", "kedarnath tempal", "kedarnatha", "kedarnath dham"],
+        "badrinath": ["badrinath", "badri", "badrinath temple", "badrinarayan", "badrinath dham"],
+        "somnath": ["somnath", "somnath temple", "somnath mandir", "prabhas"],
+        "meenakshi": ["meenakshi", "madurai meenakshi", "meenakshi amman"],
         "kailasa": ["kailasa", "kailash", "ellora", "cave 16", "cave16"],
         "konark": ["konark", "sun temple odisha", "surya mandir", "black pagoda", "odisha"],
         "modhera": ["modhera", "surya kund", "suryakund", "mehsana"],
@@ -1039,46 +1287,131 @@ def autonomous_monument_research_and_synthesis(req: AutonomousResearchRequest):
         "khajuraho": ["khajuraho", "kandariya", "chandela"]
     }
 
+    # Clean query of common typos
+    clean_q = raw_query.lower().replace("tempal", "temple").replace("templa", "temple").replace("mandhir", "mandir").replace("bavdi", "baori").replace("kailash", "kailasa").strip()
+
     for key, aliases in aliases_map.items():
-        if any(a in q for a in aliases) or key in q:
+        if any(a in clean_q for a in aliases) or key in clean_q:
             matched = knowledge_db[key]
             break
 
     if not matched:
-        # Dynamic AI Knowledge Synthesis for ANY Custom Monument Name!
-        is_water = any(w in q for w in ["vav", "well", "stepwell", "baori", "kund", "tank"])
-        is_rock = any(w in q for w in ["cave", "rock", "ellora", "ajanta", "elephanta", "kailasa", "badami"])
-        is_temple = any(w in q for w in ["temple", "mandir", "deula", "vimana", "shrine", "gopuram", "thanjavur", "khajuraho", "chariot", "ratha", "konark", "hampi"])
+        # LIVE INTERNET RESEARCH: Query Wikipedia & Wikimedia Commons in Real-Time!
+        wiki_title = raw_query.title()
+        summary_text = ""
+        wiki_images = []
+        wiki_lat = 23.5
+        wiki_lon = 72.5
 
-        geom = "octagonal_kund" if "kund" in q else ("stepped_pyramid_baori" if "baori" in q else ("monolithic_rockcut" if is_rock else ("chariot_mandapa" if is_temple else "stepwell_linear")))
-        stone = "basalt_black" if is_rock else ("dhrangadhra_gold" if "vav" in q or "gujarat" in q or "temple" in q else "agra_red")
-        depth = 18.0 if is_water else (26.0 if is_rock else 14.0)
-        tiers = 5 if is_water else 4
+        try:
+            import urllib.request, urllib.parse
+            # 1. OpenSearch to resolve exact title & typos
+            os_url = f"https://en.wikipedia.org/w/api.php?action=opensearch&search={urllib.parse.quote(clean_q)}&limit=3&namespace=0&format=json"
+            os_req = urllib.request.Request(os_url, headers={"User-Agent": "Dharohar4D/1.0 (Heritage Research Bot; yash@lifepulse.in)"})
+            with urllib.request.urlopen(os_req, timeout=3.5) as os_res:
+                os_data = json.loads(os_res.read().decode("utf-8"))
+                if os_data[1]:
+                    wiki_title = os_data[1][0]
+
+            # 2. Page summary, coordinates & lead photo
+            p_url = f"https://en.wikipedia.org/w/api.php?action=query&titles={urllib.parse.quote(wiki_title)}&prop=pageimages|extracts|coordinates&piprop=original|thumbnail&pithumbsize=800&exintro=1&explaintext=1&format=json"
+            p_req = urllib.request.Request(p_url, headers={"User-Agent": "Dharohar4D/1.0 (Heritage Research Bot; yash@lifepulse.in)"})
+            with urllib.request.urlopen(p_req, timeout=3.5) as p_res:
+                p_data = json.loads(p_res.read().decode("utf-8"))
+                pages = p_data.get("query", {}).get("pages", {})
+                for pid, p in pages.items():
+                    summary_text = p.get("extract", "")
+                    if p.get("thumbnail"):
+                        wiki_images.append(p["thumbnail"]["source"])
+                    if p.get("coordinates"):
+                        wiki_lat = p["coordinates"][0].get("lat", 23.5)
+                        wiki_lon = p["coordinates"][0].get("lon", 72.5)
+
+            # 3. Wikimedia Commons Multi-View Photos
+            c_url = f"https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch={urllib.parse.quote(wiki_title)}&gsrnamespace=6&gsrlimit=8&prop=imageinfo&iiprop=url|mime&iiurlwidth=800&format=json"
+            c_req = urllib.request.Request(c_url, headers={"User-Agent": "Dharohar4D/1.0 (Heritage Research Bot; yash@lifepulse.in)"})
+            with urllib.request.urlopen(c_req, timeout=3.5) as c_res:
+                c_data = json.loads(c_res.read().decode("utf-8"))
+                for pid, p in c_data.get("query", {}).get("pages", {}).items():
+                    for ii in p.get("imageinfo", []):
+                        u = ii.get("thumburl") or ii.get("url")
+                        mime = ii.get("mime", "")
+                        if u and "image" in mime and not u.endswith(".svg") and not u.endswith(".tif") and len(wiki_images) < 4:
+                            if u not in wiki_images:
+                                wiki_images.append(u)
+        except Exception as e:
+            print("Online research fallback note:", e)
+
+        if not wiki_images:
+            wiki_images = [
+                "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=800&q=80",
+                "https://images.unsplash.com/photo-1599837965377-fbe81a298bf6?w=800&q=80",
+                "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&q=80",
+                "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80",
+            ]
+
+        # Analyze context to classify into accurate architectural archetype
+        context_blob = f"{clean_q} {wiki_title} {summary_text}".lower()
+
+        is_himalayan = any(w in context_blob for w in ["kedarnath", "badrinath", "tungnath", "amarnath", "himalay", "garhwal", "uttarakhand", "snow", "chardham"])
+        is_dravidian = any(w in context_blob for w in ["dravidian", "gopuram", "meenakshi", "madurai", "rameswaram", "tirupati", "chola", "pandya", "tamil nadu", "kerala"])
+        is_rock = any(w in context_blob for w in ["cave", "rock-cut", "ellora", "ajanta", "elephanta", "kailasa", "badami", "monolith"])
+        is_chariot = any(w in context_blob for w in ["chariot", "ratha", "konark", "hampi"])
+        is_kund = any(w in context_blob for w in ["kund", "tank", "modhera", "surya kund", "pushkar", "sarovar", "golden temple"])
+        is_baori = any(w in context_blob for w in ["baori", "chand baori", "abhaneri"])
+        is_vav = any(w in context_blob for w in ["vav", "stepwell", "step-well", "queen's stepwell"])
+        is_temple = any(w in context_blob for w in ["temple", "mandir", "shrine", "deula", "vimana", "prasada", "sanctum", "jyotirlinga"])
+
+        if is_himalayan:
+            geom = "himalayan_shikhara"
+            stone = "basalt_black"
+        elif is_dravidian:
+            geom = "dravidian_gopuram"
+            stone = "dhrangadhra_gold"
+        elif is_rock:
+            geom = "monolithic_rockcut"
+            stone = "basalt_black"
+        elif is_chariot:
+            geom = "chariot_mandapa"
+            stone = "dhrangadhra_gold"
+        elif is_kund:
+            geom = "octagonal_kund"
+            stone = "dhrangadhra_gold"
+        elif is_baori:
+            geom = "stepped_pyramid_baori"
+            stone = "basalt_black"
+        elif is_vav:
+            geom = "stepwell_linear"
+            stone = "dhrangadhra_gold"
+        elif is_temple:
+            geom = "nagara_shikhara"
+            stone = "dhrangadhra_gold"
+        else:
+            geom = "nagara_shikhara"
+            stone = "dhrangadhra_gold"
+
+        depth = 18.0 if geom == "himalayan_shikhara" else (24.0 if geom in ["nagara_shikhara", "dravidian_gopuram"] else 18.0)
+        tiers = 5
 
         matched = {
-            "name": raw_query.title(),
-            "location": "Historic Cultural Corridor, India",
+            "name": wiki_title,
+            "location": f"Historic Locus, Coordinates: {round(wiki_lat, 4)}° N, {round(wiki_lon, 4)}° E",
             "dynasty": "Classical Indian Heritage Architecture",
-            "period": "11th to 15th Century AD",
+            "period": "Historic Era",
             "architectural_style": f"Monumental {geom.replace('_', ' ').title()}",
             "geometry_type": geom,
             "depth_meters": depth,
             "tiers_count": tiers,
             "stone_material": stone,
-            "water_state": "sacred_aquifer" if is_water else "dry_excavated",
-            "latitude": 23.5,
-            "longitude": 72.5,
-            "images": [
-                "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=800&q=80",
-                "https://images.unsplash.com/photo-1599837965377-fbe81a298bf6?w=800&q=80",
-                "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&q=80",
-                "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80",
-            ],
-            "historical_lore": f"Autonomously synthesized cultural heritage asset for {raw_query.title()}. Extracted architectural symmetry, photogrammetric elevation, and subterranean hydraulic parameters from epigraphical archives.",
-            "epigraph_shloka": f"ॐ स्वस्ति श्री ! {raw_query.title()} कीर्तिस्तम्भ प्रतिष्ठापिता... धर्मार्थं काम मोक्ष फलप्रदा ॥",
-            "epigraph_iast": f"om svasti śrī ! {raw_query.title()} kīrtistambha pratiṣṭhāpitā... dharmārthaṃ kāma mokṣa phalapradā ||",
-            "hindi_trans": f"{raw_query.title()} के गौरव और जन-कल्याण हेतु इस ऐतिहासिक स्मारक की प्रतिष्ठा संपन्न हुई।",
-            "english_trans": f"This venerable heritage monument was consecrated to preserve architectural glory, civic welfare, and spiritual harmony."
+            "water_state": "lotus_pool" if geom in ["octagonal_kund", "dravidian_gopuram"] else ("sacred_aquifer" if is_vav else "dry_excavated"),
+            "latitude": wiki_lat,
+            "longitude": wiki_lon,
+            "images": wiki_images,
+            "historical_lore": summary_text[:350] if summary_text else f"Autonomously synthesized heritage asset for {wiki_title}. Analyzed architectural symmetry, elevation profile, and structural parameters from real-time archives.",
+            "epigraph_shloka": f"ॐ स्वस्ति श्री ! {wiki_title} कीर्तिस्तम्भ प्रतिष्ठापिता... धर्मार्थं काम मोक्ष फलप्रदा ॥",
+            "epigraph_iast": f"om svasti śrī ! {wiki_title} kīrtistambha pratiṣṭhāpitā... dharmārthaṃ kāma mokṣa phalapradā ||",
+            "hindi_trans": f"{wiki_title} के गौरव और जन-कल्याण हेतु इस ऐतिहासिक पावन स्मारक की प्रतिष्ठा संपन्न हुई।",
+            "english_trans": f"This sacred heritage monument of {wiki_title} was consecrated to preserve eternal architectural majesty, peace, and spiritual welfare."
         }
 
     # Synthesize Complete Twin payload
