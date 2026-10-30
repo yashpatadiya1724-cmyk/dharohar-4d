@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { sunPosition, calculateLitTiers } from "@/lib/solar";
 import {
   Sun,
   Clock,
@@ -62,8 +63,56 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
   const [currentDepth, setCurrentDepth] = useState<number>(12);
   const [selectedPoi, setSelectedPoi] = useState<POI | null>(null);
   const [renderMode, setRenderMode] = useState<"realistic" | "xray" | "lidar">("realistic");
+  const [qualityMode, setQualityMode] = useState<"low" | "med" | "high">("high");
   const [isAutoRotate, setIsAutoRotate] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+  // Screenshot with Watermark (T11)
+  const takeWatermarkedScreenshot = () => {
+    if (!rendererRef.current) return;
+    const canvas = rendererRef.current.domElement;
+    const dataUrl = canvas.toDataURL("image/png");
+
+    const offscreen = document.createElement("canvas");
+    offscreen.width = canvas.width;
+    offscreen.height = canvas.height;
+    const ctx = offscreen.getContext("2d");
+    if (!ctx) return;
+
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+
+      const grad = ctx.createLinearGradient(0, offscreen.height - 70, 0, offscreen.height);
+      grad.addColorStop(0, "rgba(10, 15, 29, 0)");
+      grad.addColorStop(1, "rgba(10, 15, 29, 0.95)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, offscreen.height - 70, offscreen.width, 70);
+
+      ctx.font = "bold 18px Inter, sans-serif";
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillText("Dharohar 4D • Neural Heritage Digital Twin", 20, offscreen.height - 40);
+
+      ctx.font = "12px Inter, sans-serif";
+      ctx.fillStyle = "#cbd5e1";
+      ctx.fillText(
+        `${twinData?.name || "Adalaj Stepwell"} | Epoch: ${epochs[epochIndex]?.year || "1063 AD"} | Depth: -${currentDepth}m | ${formatTime(timeHour)}`,
+        20,
+        offscreen.height - 18
+      );
+
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "bold 12px Inter, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText("IIT Gandhinagar / Blithchron '27", offscreen.width - 20, offscreen.height - 18);
+
+      const link = document.createElement("a");
+      link.download = `Dharohar4D_${(twinData?.name || "Adalaj").replace(/\s+/g, "_")}_${epochs[epochIndex]?.year || "Epoch"}.png`;
+      link.href = offscreen.toDataURL("image/png");
+      link.click();
+    };
+    img.src = dataUrl;
+  };
 
   // Architectural Layer Visibility Toggles
   const [layerPillars, setLayerPillars] = useState<boolean>(true);
@@ -94,12 +143,13 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
   const torchesGroupRef = useRef<THREE.Group | null>(null);
   const materialsRef = useRef<{ [key: string]: THREE.MeshStandardMaterial | THREE.MeshBasicMaterial }>({});
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const targetCamPosRef = useRef<THREE.Vector3>(new THREE.Vector3(26, 18, 28));
   const targetLookAtRef = useRef<THREE.Vector3>(new THREE.Vector3(0, -9, 0));
   const autoRotateAngleRef = useRef<number>(0);
 
   // Historical Epoch Definitions
-  const epochs = twinData?.epochs || [
+  const epochs: any[] = twinData?.epochs || [
     {
       id: "1063",
       year: "1063 AD",
@@ -314,7 +364,9 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
       antialias: true,
       alpha: true,
       powerPreference: "high-performance",
+      preserveDrawingBuffer: true,
     });
+    rendererRef.current = renderer;
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
@@ -2076,6 +2128,24 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
 
         {/* View Mode Switcher: Realistic / X-Ray / LiDAR */}
         <div className="flex items-center gap-2">
+          {/* Quality Mode Toggle (T10) */}
+          <div className="flex bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-[10px] font-bold">
+            {(["low", "med", "high"] as const).map((q) => (
+              <button
+                key={q}
+                onClick={() => setQualityMode(q)}
+                className={`px-2 py-0.5 rounded-lg uppercase transition-all ${
+                  qualityMode === q
+                    ? "bg-purple-600 text-white shadow-xs"
+                    : "text-slate-400 hover:text-white"
+                }`}
+                title={`Shadow Quality: ${q === "high" ? "2048px PCF" : q === "med" ? "1024px" : "512px"}`}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+
           <div className="flex bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs font-bold">
             <button
               onClick={() => setRenderMode("realistic")}
@@ -2108,6 +2178,15 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
               ⚡ LiDAR
             </button>
           </div>
+
+          {/* Screenshot Watermark Capture (T11) */}
+          <button
+            onClick={takeWatermarkedScreenshot}
+            className="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-amber-400 hover:text-amber-300 transition-all shadow-xs"
+            title="Download Watermarked 3D Twin Screenshot (T11)"
+          >
+            <Camera className="w-4 h-4" />
+          </button>
 
           {/* Fullscreen Toggle */}
           <button
@@ -2171,42 +2250,58 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
         </div>
       )}
 
-      {/* 5. Subterranean Telemetry HUD (Right Side) */}
-      <div className="absolute top-20 right-4 z-20 bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 backdrop-blur space-y-2 max-w-[210px] pointer-events-none hidden sm:block shadow-xl">
-        <div className="flex items-center justify-between text-amber-400 font-semibold border-b border-slate-800 pb-1.5">
-          <span className="flex items-center gap-1">
-            <Compass className="w-3.5 h-3.5" />
-            Shaft Penetration
-          </span>
-          <span>{timeHour >= 11 && timeHour <= 13 ? "Direct Bore" : "Oblique Ray"}</span>
-        </div>
-        <div className="space-y-1 text-[11px] text-slate-300">
-          <div className="flex justify-between">
-            <span className="text-slate-400">Sun Altitude:</span>
-            <span className="font-mono font-bold text-white">
-              {(Math.sin(((timeHour - 7) / 11) * Math.PI) * 78).toFixed(1)}°
-            </span>
+      {/* 5. Subterranean Telemetry HUD (Right Side) (T5, T9) */}
+      {(() => {
+        const solar = sunPosition(23.1667, 72.5800, 172, timeHour);
+        const litTiers = calculateLitTiers(solar.altitudeDeg, 6.8, twinData?.tiers_count || 5);
+        const rt60 = (0.4 + (Math.min(24.5, currentDepth) / 24.5) * 4.1).toFixed(1);
+
+        return (
+          <div className="absolute top-20 right-4 z-20 bg-slate-900/95 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 backdrop-blur space-y-2 max-w-[220px] pointer-events-none hidden sm:block shadow-xl">
+            <div className="flex items-center justify-between text-amber-400 font-semibold border-b border-slate-800 pb-1.5">
+              <span className="flex items-center gap-1 font-bold">
+                <Compass className="w-3.5 h-3.5" />
+                NOAA Solar Raytracer
+              </span>
+              <span className="text-[10px] font-mono bg-amber-500/15 px-1.5 py-0.5 rounded text-amber-300">
+                {solar.altitudeDeg > 55 ? "Zenith Shaft" : "Oblique"}
+              </span>
+            </div>
+            <div className="space-y-1 text-[11px] text-slate-300">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Solar Alt / Az:</span>
+                <span className="font-mono font-bold text-white">
+                  {solar.altitudeDeg.toFixed(1)}° / {solar.azimuthDeg.toFixed(1)}°
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Lit Tiers (T5):</span>
+                <span className="font-semibold text-emerald-400">
+                  {litTiers.litTiers.length > 0 ? `Tier ${litTiers.litTiers.join(", ")}` : "None (Diffuse)"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Depth Penetration:</span>
+                <span className="font-mono font-bold text-sky-400">
+                  -{litTiers.penetrationDepthM.toFixed(1)}m
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Chamber Temp:</span>
+                <span className="font-mono text-sky-300 font-bold">
+                  {32 - Math.round(currentDepth * 0.25)}°C (Thermal Mass)
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Acoustic RT60:</span>
+                <span className="font-mono text-purple-300 font-bold">
+                  {rt60}s Reverb
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">Ray Reaches:</span>
-            <span className="font-semibold text-emerald-400">
-              {timeHour >= 11 && timeHour <= 13.5 ? "Tier 5 (-22m Cistern)" : "Tier 2 (-8m Pavilion)"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">Chamber Temp:</span>
-            <span className="font-mono text-sky-300 font-bold">
-              {32 - Math.round(currentDepth * 0.25)}°C (Cooling)
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">Acoustic Decay:</span>
-            <span className="font-mono text-purple-300 font-bold">
-              {(0.4 + (currentDepth / 6) * 0.8).toFixed(1)}s Reverb
-            </span>
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* 6. Bottom Master Controls: Layer Dissection, Walkthrough, Time Travel & Sun Sliders */}
       <div className="p-4 bg-slate-900/95 border-t border-slate-800 space-y-4">
@@ -2348,7 +2443,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {epochs.map((ep, idx) => (
+            {epochs.map((ep: any, idx: number) => (
               <button
                 key={ep.id}
                 onClick={() => {

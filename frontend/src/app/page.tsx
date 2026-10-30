@@ -121,6 +121,14 @@ export default function DharoharHomePage() {
                 <Compass className="w-4 h-4 text-sky-400" />
                 <span>Explorer Reconstructor</span>
               </Link>
+
+              <Link
+                href="/corridor"
+                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/50 text-amber-300 px-5 py-3 rounded-2xl text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95"
+              >
+                <MapPin className="w-4 h-4 text-amber-400" />
+                <span>Heritage Corridor</span>
+              </Link>
             </div>
           </div>
 

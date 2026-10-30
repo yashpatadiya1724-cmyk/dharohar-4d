@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Landmark, FileText, Compass, Layers, Sparkles } from "lucide-react";
+import { Landmark, FileText, Compass, Layers, Sparkles, MapPin } from "lucide-react";
 
 export const BottomNav: React.FC = () => {
   const pathname = usePathname();
@@ -11,8 +11,9 @@ export const BottomNav: React.FC = () => {
   const navItems = [
     { label: "3D Twin", href: "/", icon: Landmark },
     { label: "AI Studio", href: "/studio", icon: Sparkles },
-    { label: "AI Epigrapher", href: "/epigrapher", icon: FileText },
-    { label: "Expedition GIS", href: "/expedition", icon: Compass },
+    { label: "Epigrapher", href: "/epigrapher", icon: FileText },
+    { label: "Expedition", href: "/expedition", icon: Compass },
+    { label: "Corridor", href: "/corridor", icon: MapPin },
   ];
 
   return (

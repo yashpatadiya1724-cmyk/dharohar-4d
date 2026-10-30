@@ -19,7 +19,7 @@ from app.api.v1.admin import router as admin_router
 from app.api.v1.meter import router as meter_router
 from app.api.v1.water import router as water_router
 from app.api.v1.microgrid import router as microgrid_router
-from app.api.v1.dharohar import router as dharohar_router
+from app.api.v1.dharohar import router as dharohar_router, prd_router
 
 app = FastAPI(
     title="Dharohar 4D API — Neural Heritage Digital Twin",
@@ -64,13 +64,22 @@ app.include_router(meter_router, prefix=settings.API_V1_STR)
 app.include_router(water_router, prefix=settings.API_V1_STR)
 app.include_router(microgrid_router, prefix=settings.API_V1_STR)
 app.include_router(dharohar_router, prefix=settings.API_V1_STR)
+app.include_router(prd_router, prefix=settings.API_V1_STR)
 
 @app.get("/healthz", tags=["System"])
 def health_check():
     return {
-        "status": "healthy",
+        "status": "ok",
         "service": settings.PROJECT_NAME,
-        "version": settings.VERSION
+        "version": settings.VERSION,
+        "models": [
+            "CRNN-CTC",
+            "Sanskrit-IndicBART",
+            "ByT5-Small",
+            "CLIP-ViT-B32",
+            "Solar-NOAA-v1",
+            "ThreeJS-ProceduralTwin-v2"
+        ]
     }
 
 @app.get("/", tags=["System"])

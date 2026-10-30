@@ -45,21 +45,35 @@ export default function DharoharMainPage() {
           </p>
         </div>
 
-        {/* Action Buttons to Epigrapher & Explorer */}
+        {/* Action Buttons to Studio, Epigrapher & Explorer */}
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            href="/dharohar/epigrapher"
+            href="/studio"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shadow-amber-500/20"
+          >
+            <Sparkles className="w-4 h-4 fill-current" />
+            <span>AI 3D Studio</span>
+          </Link>
+          <Link
+            href="/epigrapher"
             className="inline-flex items-center gap-2 bg-purple-950/80 hover:bg-purple-900 border border-purple-700/80 px-4 py-2.5 rounded-xl text-xs font-bold text-purple-200 transition-all shadow-md shadow-purple-950/40"
           >
             <FileText className="w-4 h-4 text-purple-400" />
             <span>AI Stone Epigrapher</span>
           </Link>
           <Link
-            href="/dharohar/expedition"
+            href="/expedition"
             className="inline-flex items-center gap-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-700/80 px-4 py-2.5 rounded-xl text-xs font-bold text-sky-200 transition-all shadow-md shadow-sky-950/40"
           >
             <Compass className="w-4 h-4 text-sky-400" />
             <span>Explorer Reconstructor</span>
+          </Link>
+          <Link
+            href="/corridor"
+            className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold text-amber-300 transition-all shadow-md"
+          >
+            <MapPin className="w-4 h-4 text-amber-400" />
+            <span>Heritage Corridor</span>
           </Link>
         </div>
       </div>

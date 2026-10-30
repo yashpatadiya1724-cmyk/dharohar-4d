@@ -15,6 +15,7 @@ export const Navbar: React.FC = () => {
     { label: "AI 3D Studio", href: "/studio", icon: Sparkles },
     { label: "AI Epigrapher", href: "/epigrapher", icon: FileText },
     { label: "Expedition GIS", href: "/expedition", icon: Compass },
+    { label: "Heritage Corridor", href: "/corridor", icon: MapPin },
   ];
 
   return (
