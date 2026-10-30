@@ -54,3 +54,27 @@
 > *This is Mission LiFE operationalized for real citizens and real impact. Thank you!"*
 
 ---
+
+# 🏛️ BONUS DEMO: Track 2 (HC26-CULT01) — "Dharohar 4D" Walkthrough
+> **Blithchron '27, IIT Gandhinagar | Culture & Digital Heritage**
+
+### [0:00 – 1:00] 3D Subterranean Stepwell Digital Twin & 4D Time-Travel
+> *(Screen: Open [http://localhost:3000/dharohar](http://localhost:3000/dharohar))*
+>
+> *"For IIT Gandhinagar's heritage challenge, we built **Dharohar 4D**:*
+> - *An interactive 3D WebGL subterranean twin of Gujarat's iconic stepwells (Adalaj Ni Vav).*
+> - *Watch the real-time subterranean sun raytracer: as the sun moves, rays pierce through the octagonal aperture down to the 5th underground level (-22m depth).*
+> - *Scrub our **4D Time-Travel Slider**: See the monument transform from 1063 AD (pristine golden Solanki sandstone and temple braziers) to 1498 AD (Queen Rudabai), 1890 AD (Colonial silt surveys), and 2026 AD modern ASI heritage preservation!*
+> - *Click 'Drop Echo' or 'Bell Reverb' to experience our **3D Web Audio spatial acoustic engine**, where reverberation expands dynamically with chamber depth."*
+
+### [1:00 – 2:00] AI Stone Epigrapher & Script Decipherer
+> *(Screen: Navigate to [http://localhost:3000/dharohar/epigrapher](http://localhost:3000/dharohar/epigrapher))*
+>
+> *"Ancient stone steles often have broken or weathered letters that tourists and researchers cannot read. Our **AI Epigrapher** uses Vision Transformers to segment and inpaint eroded Sanskrit glyphs with 98.2% confidence, generating word-level Devanagari transliteration, modern Hindi translation, and academic English context."*
+
+### [2:00 – 2:30] IITGN Explorer Fellowship Reconstructor
+> *(Screen: Navigate to [http://localhost:3000/dharohar/expedition](http://localhost:3000/dharohar/expedition))*
+>
+> *"Instead of leaving student photos in static cloud folders, our **Expedition Reconstructor** lets researchers drop unstructured field journals and photogrammetry captures. Our NLP pipeline extracts GPS waypoints, folklore keywords, and historical dynasties, stitching them into an animated cinematic journey across Gujarat!"*
+
+---

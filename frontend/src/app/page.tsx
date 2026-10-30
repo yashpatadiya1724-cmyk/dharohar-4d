@@ -329,6 +329,37 @@ export default function TodayPage() {
             </div>
           </Link>
         </div>
+
+        {/* TRACK 2 SPOTLIGHT: DHAROHAR 4D (IIT GANDHINAGAR BLITHCHRON '27) */}
+        <div className="bg-gradient-to-r from-amber-950/80 via-slate-900 to-purple-950/80 border border-amber-600/40 rounded-2xl p-4 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+              🏛️
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
+                  Track 2: Blithchron '27 IITGN
+                </span>
+                <span className="text-xs text-slate-400">HC26-CULT01 Open Innovation</span>
+              </div>
+              <h3 className="text-base font-extrabold text-white mt-0.5">
+                Dharohar 4D: Neural Heritage Digital Twin & Ancient Epigraphy Engine
+              </h3>
+              <p className="text-xs text-slate-300 mt-0.5 max-w-xl">
+                Explore 3D Subterranean Stepwells (Adalaj), 4D Time-Travel (1063 AD to 2026 AD), AI Inscription Inpainting & IITGN Explorer Fellowship Reconstructor.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/dharohar"
+            className="shrink-0 inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs transition-all shadow-md shadow-amber-500/20"
+          >
+            <span>Launch Dharohar 4D</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </section>
 
       {/* 3. TODAY'S 3 MICRO-ACTIONS */}

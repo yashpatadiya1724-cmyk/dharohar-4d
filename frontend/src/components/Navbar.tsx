@@ -52,6 +52,15 @@ export const Navbar: React.FC = () => {
             <Globe className="w-3 h-3 text-slate-400 absolute right-2 pointer-events-none" />
           </div>
 
+          {/* Dharohar 4D (IIT Gandhinagar Heritage Digital Twin) */}
+          <Link
+            href="/dharohar"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 bg-gradient-to-r from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 border border-amber-300/80 px-2.5 py-1 rounded-lg transition-all shadow-2xs"
+          >
+            <span>🏛️ Dharohar 4D</span>
+            <span className="text-[9px] bg-amber-800 text-white px-1 rounded-sm font-black">IITGN</span>
+          </Link>
+
           {/* 3D Solar Raytracer */}
           <Link
             href="/solar"
