@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import {
   Compass,
   MapPin,
   Play,
+  Pause,
   Layers,
   Sparkles,
   Camera,
@@ -17,14 +18,23 @@ import {
   Navigation,
   ArrowRight,
   PlusCircle,
-  Tag
+  Tag,
+  Volume2,
+  Radio,
+  Activity
 } from "lucide-react";
 
 export default function ExpeditionReconstructorPage() {
   const [expeditions, setExpeditions] = useState<any[]>([]);
   const [selectedExp, setSelectedExp] = useState<any>(null);
-  const [activeStopIdx, setActiveStopIdx] = useState<number>(1); // Default to Stop 2 (Adalaj)
+  const [activeStopIdx, setActiveStopIdx] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isPlayingRoute, setIsPlayingRoute] = useState<boolean>(false);
+  const [isPlayingAudioLog, setIsPlayingAudioLog] = useState<boolean>(false);
+
+  // Canvas ref for GIS Map
+  const mapCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
   // Ingestion form state
   const [monumentName, setMonumentName] = useState<string>("Siddhpur Rudra Mahalaya Havelis");
@@ -52,6 +62,165 @@ export default function ExpeditionReconstructorPage() {
     fetchExpeditions();
   }, []);
 
+  // 2D Canvas Animated Topographic Route Map
+  useEffect(() => {
+    const canvas = mapCanvasRef.current;
+    if (!canvas || !selectedExp) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+    let particleT = 0;
+    const width = 700;
+    const height = 340;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+
+    // Coordinate mapping to canvas space
+    // Gujarat corridor bounds approx: lat 23.1 to 23.9, lng 72.0 to 72.7
+    const mapCoords = (lat: number, lng: number) => {
+      const minLat = 23.1;
+      const maxLat = 23.92;
+      const minLng = 72.05;
+      const maxLng = 72.75;
+
+      const x = ((lng - minLng) / (maxLng - minLng)) * (width - 120) + 60;
+      const y = (1.0 - (lat - minLat) / (maxLat - minLat)) * (height - 80) + 40;
+      return { x, y };
+    };
+
+    const stops = selectedExp.stops;
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // 1. Topographic radar grid lines
+      ctx.strokeStyle = "rgba(71, 85, 105, 0.25)";
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 30; y < height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      // 2. Draw Trajectory Connecting Path
+      if (stops.length > 1) {
+        ctx.beginPath();
+        const start = mapCoords(stops[0].lat, stops[0].lng);
+        ctx.moveTo(start.x, start.y);
+
+        for (let i = 1; i < stops.length; i++) {
+          const pt = mapCoords(stops[i].lat, stops[i].lng);
+          ctx.lineTo(pt.x, pt.y);
+        }
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 6]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Animated Energy / Waypoint Pulse
+        particleT = (particleT + 0.005) % (stops.length - 1);
+        const segIdx = Math.floor(particleT);
+        const segProg = particleT - segIdx;
+        const p1 = mapCoords(stops[segIdx].lat, stops[segIdx].lng);
+        const p2 = mapCoords(stops[segIdx + 1].lat, stops[segIdx + 1].lng);
+        const curX = p1.x + (p2.x - p1.x) * segProg;
+        const curY = p1.y + (p2.y - p1.y) * segProg;
+
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = "#38bdf8";
+        ctx.fillStyle = "#38bdf8";
+        ctx.beginPath();
+        ctx.arc(curX, curY, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      // 3. Draw Waypoint Nodes
+      stops.forEach((stop: any, idx: number) => {
+        const { x, y } = mapCoords(stop.lat, stop.lng);
+        const isSelected = activeStopIdx === idx;
+
+        // Halo
+        ctx.beginPath();
+        ctx.arc(x, y, isSelected ? 18 : 12, 0, Math.PI * 2);
+        ctx.fillStyle = isSelected ? "rgba(56, 189, 248, 0.3)" : "rgba(100, 116, 139, 0.2)";
+        ctx.fill();
+
+        // Node center
+        ctx.beginPath();
+        ctx.arc(x, y, isSelected ? 8 : 6, 0, Math.PI * 2);
+        ctx.fillStyle = isSelected ? "#38bdf8" : "#94a3b8";
+        ctx.fill();
+        ctx.strokeStyle = "#0f172a";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Label
+        ctx.font = isSelected ? "bold 11px sans-serif" : "10px sans-serif";
+        ctx.fillStyle = isSelected ? "#38bdf8" : "#cbd5e1";
+        ctx.textAlign = "center";
+        ctx.fillText(stop.name.split(",")[0], x, y - 14);
+      });
+
+      animId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      cancelAnimationFrame(animId);
+    };
+  }, [selectedExp, activeStopIdx]);
+
+  // Audio Log Synthesizer
+  const playFieldAudioLog = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioCtx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") ctx.resume();
+
+      setIsPlayingAudioLog(true);
+      const now = ctx.currentTime;
+
+      // Synthesize short walkie-talkie field transmission beep and radio static
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.setValueAtTime(1200, now + 0.1);
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.35);
+
+      setTimeout(() => {
+        setIsPlayingAudioLog(false);
+      }, 1800);
+    } catch (e) {
+      console.warn("Audio log error:", e);
+      setIsPlayingAudioLog(false);
+    }
+  };
+
   const handleIngestNotes = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -69,7 +238,6 @@ export default function ExpeditionReconstructorPage() {
 
       if (res.success && selectedExp) {
         setIngestSuccess(res.message);
-        // Append dynamically to current expedition
         const newStop = {
           stop_number: selectedExp.stops.length + 1,
           name: res.reconstructed_node.monument_name,
@@ -98,7 +266,7 @@ export default function ExpeditionReconstructorPage() {
   const currentStop = selectedExp?.stops?.[activeStopIdx] || selectedExp?.stops?.[0];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 space-y-8">
+    <div className="space-y-8">
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
@@ -119,10 +287,10 @@ export default function ExpeditionReconstructorPage() {
         </div>
 
         <Link
-          href="/dharohar"
+          href="/"
           className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 px-4 py-2 rounded-xl text-xs font-bold text-slate-200 transition-all self-start md:self-auto"
         >
-          <span>Return to 4D Twin</span>
+          <span>Return to 3D Twin</span>
           <ArrowRight className="w-4 h-4 text-sky-400" />
         </Link>
       </div>
@@ -178,68 +346,54 @@ export default function ExpeditionReconstructorPage() {
 
       {/* Main Interactive Spatial Journey Map & Active Stop */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Interactive Map Canvas / Itinerary */}
+        {/* Left 2 Cols: Animated Topographic GIS Radar Canvas + Stepper */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <h3 className="font-bold text-base text-white flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-sky-400" />
-                  Interactive Spatial Itinerary Timeline
+                  <Activity className="w-5 h-5 text-sky-400" />
+                  Topographic Heritage Radar (Gujarat Corridor)
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Click any stop along the Gandhinagar-Patan heritage corridor to inspect raw field data
+                  Live animated trajectory tracing Gandhinagar-Mehsana-Patan research route
                 </p>
               </div>
-              <span className="text-xs bg-sky-950 text-sky-300 border border-sky-800 px-2.5 py-1 rounded-full font-mono">
-                GPS Traced
+              <span className="text-xs font-mono text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-2 py-0.5 rounded-md">
+                164 km Traced
               </span>
             </div>
 
-            {/* Visual Stepper Waypoints */}
-            <div className="space-y-4">
+            {/* Canvas */}
+            <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 p-2">
+              <canvas
+                ref={mapCanvasRef}
+                className="w-full h-[280px] block"
+                style={{ aspectRatio: "700 / 340" }}
+              />
+              <div className="absolute bottom-3 left-3 text-[10px] bg-slate-900/90 border border-slate-800 text-slate-400 px-2.5 py-1 rounded-md">
+                🛰️ WGS84 GPS Telemetry • IITGN Palaj Base
+              </div>
+            </div>
+
+            {/* Waypoint Selectors */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
               {selectedExp?.stops.map((stop: any, idx: number) => {
                 const isActive = activeStopIdx === idx;
                 return (
-                  <div
+                  <button
                     key={stop.stop_number}
                     onClick={() => setActiveStopIdx(idx)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
+                    className={`p-2.5 rounded-xl border text-left transition-all ${
                       isActive
-                        ? "bg-slate-800/90 border-sky-500 ring-2 ring-sky-500/20 shadow-lg"
-                        : "bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60"
+                        ? "bg-sky-950/80 border-sky-500 text-sky-200 ring-2 ring-sky-500/20 shadow-md"
+                        : "bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
                     }`}
                   >
-                    <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
-                        isActive
-                          ? "bg-sky-500 text-slate-950 shadow-md shadow-sky-500/30"
-                          : "bg-slate-800 text-slate-400"
-                      }`}
-                    >
-                      {stop.stop_number}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-bold text-sm text-white truncate">{stop.name}</h4>
-                        <span className="text-[11px] text-slate-400 font-mono">{stop.date}</span>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-2">{stop.notes}</p>
-
-                      {/* Folklore Tags */}
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {stop.folklore_keywords?.map((tag: string, tIdx: number) => (
-                          <span
-                            key={tIdx}
-                            className="text-[10px] bg-slate-900 text-sky-300 border border-slate-700/80 px-2 py-0.5 rounded-md"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                    <div className="text-[10px] font-mono text-sky-400 font-bold">Stop #{stop.stop_number}</div>
+                    <div className="text-xs font-bold text-white truncate mt-0.5">{stop.name.split(",")[0]}</div>
+                    <div className="text-[9px] text-slate-400 mt-0.5">{stop.elevation_m}m Elevation</div>
+                  </button>
                 );
               })}
             </div>
@@ -253,9 +407,14 @@ export default function ExpeditionReconstructorPage() {
               <span className="text-xs uppercase tracking-wider text-sky-400 font-bold">
                 Waypoint #{currentStop?.stop_number} Field Telemetry
               </span>
-              <span className="text-xs font-mono text-emerald-400">
-                {currentStop?.elevation_m}m Elevation
-              </span>
+              <button
+                onClick={playFieldAudioLog}
+                disabled={isPlayingAudioLog}
+                className="px-2.5 py-1 rounded-lg bg-sky-950 border border-sky-800 text-[11px] font-bold text-sky-300 hover:bg-sky-900 transition-all flex items-center gap-1.5"
+              >
+                <Radio className={`w-3 h-3 ${isPlayingAudioLog ? "animate-ping text-emerald-400" : ""}`} />
+                <span>{isPlayingAudioLog ? "Broadcasting..." : "Audio Log"}</span>
+              </button>
             </div>
 
             <h3 className="text-xl font-bold text-white">{currentStop?.name}</h3>
@@ -283,6 +442,23 @@ export default function ExpeditionReconstructorPage() {
                 <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-slate-300">
                   Lng: {currentStop?.lng}° E
                 </div>
+              </div>
+            </div>
+
+            {/* Folklore Tags */}
+            <div className="mt-4 space-y-1.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Extracted Folklore Keywords:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {currentStop?.folklore_keywords?.map((tag: string, tIdx: number) => (
+                  <span
+                    key={tIdx}
+                    className="text-[10px] bg-slate-950 text-sky-300 border border-slate-800 px-2 py-0.5 rounded-md"
+                  >
+                    #{tag}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
