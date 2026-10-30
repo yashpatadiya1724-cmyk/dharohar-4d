@@ -22,9 +22,9 @@ from app.api.v1.microgrid import router as microgrid_router
 from app.api.v1.dharohar import router as dharohar_router
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    version=settings.VERSION,
-    description="LiFE Pulse – Mission LiFE Citizen Engagement App & GEDA Impact Dashboard API",
+    title="Dharohar 4D API — Neural Heritage Digital Twin",
+    version="2.0.0",
+    description="IIT Gandhinagar Blithchron '27 Heritage Revitalisation Engine (HC26-CULT01)",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -76,7 +76,7 @@ def health_check():
 @app.get("/", tags=["System"])
 def root():
     return {
-        "message": "Welcome to LiFE Pulse API. Mission LiFE Citizen Engagement Engine.",
+        "message": "Welcome to Dharohar 4D API — Neural Heritage Digital Twin & Ancient Epigraphy Engine (Blithchron '27, IIT Gandhinagar).",
         "docs": "/docs",
         "health": "/healthz"
     }
