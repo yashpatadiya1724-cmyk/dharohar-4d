@@ -343,20 +343,23 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     torchesGroupRef.current = torchesGroup;
 
     // E. Realistic Materials with Procedural Textures
-    const sandstoneTex = createSandstoneTexture();
+    const sandstoneHex = twinData?.stone_spec?.hex || 0xd4a359;
+    const sandstoneRoughness = twinData?.stone_spec?.roughness || 0.75;
+    const stoneColorCss = `#${sandstoneHex.toString(16).padStart(6, "0")}`;
+    const sandstoneTex = createSandstoneTexture(stoneColorCss);
     const friezeTex = createFriezeTexture();
 
     const stoneMat = new THREE.MeshStandardMaterial({
       map: sandstoneTex,
-      color: 0xd4a359,
-      roughness: 0.75,
+      color: sandstoneHex,
+      roughness: sandstoneRoughness,
       metalness: 0.06,
     });
     materialsRef.current.stone = stoneMat;
 
     const friezeMat = new THREE.MeshStandardMaterial({
       map: friezeTex,
-      color: 0xc4934e,
+      color: sandstoneHex,
       roughness: 0.7,
       metalness: 0.1,
     });
@@ -373,15 +376,19 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     // 2. PROCEDURAL ARCHITECTURAL MODEL (Maru-Gurjara Subterranean Stepwell)
     // =========================================================================
 
+    const numTiers = twinData?.tiers_count ? Math.max(1, Math.min(7, twinData.tiers_count)) : 5;
+    const totalDepth = twinData?.depth_meters ? Math.max(6, Math.min(38, twinData.depth_meters)) : 24.5;
+    const geomType = twinData?.geometry_type || "stepwell_linear";
+
     // A. Subterranean Excavation Retaining Box Trench
-    const pitGeo = new THREE.BoxGeometry(17.6, 26, 46.5);
+    const pitGeo = new THREE.BoxGeometry(17.6, totalDepth + 4, 46.5);
     const pitMat = new THREE.MeshStandardMaterial({
       color: 0x131a29,
       roughness: 0.95,
       side: THREE.BackSide,
     });
     const pit = new THREE.Mesh(pitGeo, pitMat);
-    pit.position.set(0, -12, 0);
+    pit.position.set(0, -(totalDepth + 4) / 2, 0);
     pit.receiveShadow = true;
     structureGroup.add(pit);
 
@@ -406,12 +413,12 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
 
     // B. Retaining Wall Zig-Zag Ghat Steps (Stepped Triangular Pyramids)
     for (let side = -1; side <= 1; side += 2) {
-      for (let level = 0; level < 5; level++) {
-        const yBase = -level * 4.8;
+      for (let level = 0; level < numTiers; level++) {
+        const yBase = -level * (totalDepth / numTiers);
         for (let i = 0; i < 4; i++) {
           const stepPyramidGeo = new THREE.ConeGeometry(1.65, 2.3, 4);
           const stepPyramid = new THREE.Mesh(stepPyramidGeo, friezeMat);
-          stepPyramid.position.set(side * 7.45, yBase - 1.2, 12 - level * 7.5 + (i - 1.5) * 2.5);
+          stepPyramid.position.set(side * 7.45, yBase - 1.2, 12 - level * (30 / numTiers) + (i - 1.5) * 2.5);
           stepPyramid.rotation.y = Math.PI / 4;
           stepPyramid.castShadow = true;
           stepPyramid.receiveShadow = true;
@@ -420,8 +427,9 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
       }
     }
 
-    // C. 5 Tiers of Pavilions (Mandapas) with Ornate Columns & Arches
-    const tierDepths = [0, -4.8, -9.6, -14.4, -19.2];
+    // C. Dynamic Tiers of Pavilions (Mandapas) with Ornate Columns & Arches
+    const tierSpacing = (totalDepth - 4.5) / Math.max(1, numTiers - 1);
+    const tierDepths = Array.from({ length: numTiers }, (_, i) => -i * tierSpacing);
     const columnOffsets = [
       [-3.2, -2.0],
       [3.2, -2.0],
@@ -430,7 +438,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     ];
 
     tierDepths.forEach((yDepth, tierIdx) => {
-      const zPos = 16 - tierIdx * 7.5;
+      const zPos = 16 - tierIdx * (30 / Math.max(1, numTiers - 1));
 
       // Gallery Floor with molded cornice
       const floorGeo = new THREE.BoxGeometry(8.8, 0.75, 6.6);
@@ -454,7 +462,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
         for (let s = 0; s < 7; s++) {
           const stepGeo = new THREE.BoxGeometry(6.6, 0.42, 0.72);
           const step = new THREE.Mesh(stepGeo, stoneMat);
-          step.position.set(0, yDepth - (s + 1) * 0.65, zPos - 2.8 - s * 0.62);
+          step.position.set(0, yDepth - (s + 1) * (tierSpacing / 7.2), zPos - 2.8 - s * 0.62);
           step.receiveShadow = true;
           step.castShadow = true;
           structureGroup.add(step);
@@ -503,17 +511,17 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
       pillarsGroup.add(arch);
     });
 
-    // D. Octagonal Subterranean Light-Well Shaft (-14m to -24m)
+    // D. Octagonal Subterranean Light-Well Shaft
     const shaftRadius = 5.6;
-    const octShaftGeo = new THREE.CylinderGeometry(shaftRadius, shaftRadius, 24, 8, 1, true);
+    const octShaftGeo = new THREE.CylinderGeometry(shaftRadius, shaftRadius, totalDepth + 2, 8, 1, true);
     const octShaftMat = new THREE.MeshStandardMaterial({
       map: sandstoneTex,
-      color: 0xb58448,
+      color: sandstoneHex,
       roughness: 0.8,
       side: THREE.DoubleSide,
     });
     const octShaft = new THREE.Mesh(octShaftGeo, octShaftMat);
-    octShaft.position.set(0, -12, -8);
+    octShaft.position.set(0, -totalDepth / 2, -8);
     octShaft.castShadow = true;
     octShaft.receiveShadow = true;
     shaftGroup.add(octShaft);
@@ -578,17 +586,19 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     dustParticlesRef.current = dustParticles;
 
     // G. Subterranean Cistern Water Surface with Submerged Steps
+    const waterColor = twinData?.water_spec?.color || 0x0284c7;
+    const waterOpacity = twinData?.water_spec?.opacity || 0.88;
     const waterGeo = new THREE.CircleGeometry(5.2, 48);
     const waterMat = new THREE.MeshStandardMaterial({
-      color: 0x0284c7,
+      color: waterColor,
       roughness: 0.08,
       metalness: 0.9,
       transparent: true,
-      opacity: 0.88,
+      opacity: waterOpacity,
     });
     const water = new THREE.Mesh(waterGeo, waterMat);
     water.rotation.x = -Math.PI / 2;
-    water.position.set(0, -22.2, -8);
+    water.position.set(0, -totalDepth + 1.8, -8);
     water.receiveShadow = true;
     structureGroup.add(water);
     waterMeshRef.current = water;
@@ -597,7 +607,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
     for (let ws = 0; ws < 4; ws++) {
       const wStepGeo = new THREE.BoxGeometry(4.2, 0.35, 0.65);
       const wStep = new THREE.Mesh(wStepGeo, stoneMat);
-      wStep.position.set(0, -22.4 - ws * 0.45, -5.5 - ws * 0.55);
+      wStep.position.set(0, -totalDepth + 1.6 - ws * 0.45, -5.5 - ws * 0.55);
       structureGroup.add(wStep);
     }
 
@@ -729,7 +739,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
 
       // Water Ripple Oscillation
       if (waterMeshRef.current) {
-        waterMeshRef.current.position.y = -22.2 + Math.sin(elapsedTime * 1.6) * 0.06;
+        waterMeshRef.current.position.y = -totalDepth + 1.8 + Math.sin(elapsedTime * 1.6) * 0.06;
       }
 
       // Torches Flame Flickering
@@ -800,7 +810,7 @@ export const Dharohar3DTwin: React.FC<Dharohar3DTwinProps> = ({
       window.removeEventListener("resize", handleResize);
       renderer.dispose();
     };
-  }, [isTourPlaying, isAutoRotate]);
+  }, [isTourPlaying, isAutoRotate, twinData]);
 
   // =========================================================================
   // 6. DYNAMIC UPDATES (Sun Raytracer, Render Modes, Layer Toggles)
