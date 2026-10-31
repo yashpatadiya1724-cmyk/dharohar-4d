@@ -1,0 +1,204 @@
+[
+  {
+    "id": "HC-01", "category": "System",
+    "name": "Health Check",
+    "method": "GET", "path": "/healthz",
+    "expect_status": 200,
+    "expect_keys": ["status", "modules", "models"]
+  },
+  {
+    "id": "TW-01", "category": "StepwellTwin",
+    "name": "Metadata endpoint",
+    "method": "GET", "path": "/api/v1/stepwell/metadata",
+    "expect_status": 200,
+    "expect_keys": ["monument_id", "name", "dimensions", "layers"]
+  },
+  {
+    "id": "TW-02", "category": "StepwellTwin",
+    "name": "List all epochs",
+    "method": "GET", "path": "/api/v1/stepwell/epochs",
+    "expect_status": 200,
+    "expect_type": "list",
+    "expect_min_length": 4
+  },
+  {
+    "id": "TW-03", "category": "StepwellTwin",
+    "name": "Single epoch (1498)",
+    "method": "GET", "path": "/api/v1/stepwell/epochs/1498",
+    "expect_status": 200,
+    "expect_keys": ["year", "label", "materials", "water"]
+  },
+  {
+    "id": "TW-04", "category": "StepwellTwin",
+    "name": "Solar position noon",
+    "method": "GET", "path": "/api/v1/stepwell/sun?hour=12&date=2026-06-21",
+    "expect_status": 200,
+    "expect_keys": ["altitude_deg", "azimuth_deg", "lit_tiers"]
+  },
+  {
+    "id": "TW-05", "category": "StepwellTwin",
+    "name": "Interpolate year 1750",
+    "method": "GET", "path": "/api/v1/stepwell/interpolate?year=1750",
+    "expect_status": 200,
+    "expect_keys": ["material", "water", "acoustics"]
+  },
+  {
+    "id": "TW-06", "category": "StepwellTwin",
+    "name": "Invalid epoch year → 404",
+    "method": "GET", "path": "/api/v1/stepwell/epochs/9999",
+    "expect_status": 404
+  },
+  {
+    "id": "EP-01", "category": "Epigraphy",
+    "name": "List steles",
+    "method": "GET", "path": "/api/v1/epigraphy/steles",
+    "expect_status": 200,
+    "expect_type": "list",
+    "expect_min_length": 3
+  },
+  {
+    "id": "EP-02", "category": "Epigraphy",
+    "name": "Get stele epigraph-adalaj-1498",
+    "method": "GET", "path": "/api/v1/epigraphy/steles/epigraph-adalaj-1498",
+    "expect_status": 200,
+    "expect_keys": ["id", "lines", "restored", "iast"]
+  },
+  {
+    "id": "EP-03", "category": "Epigraphy",
+    "name": "Analyze curated stele",
+    "method": "POST", "path": "/api/v1/epigraphy/analyze?stele_id=epigraph-adalaj-1498",
+    "expect_status": 200,
+    "expect_keys": ["id", "mode", "restored", "english"]
+  },
+  {
+    "id": "EP-06", "category": "Epigraphy",
+    "name": "Glyph candidates",
+    "method": "POST", "path": "/api/v1/epigraphy/glyph/candidates",
+    "body": {"glyph_id": "g_06"},
+    "expect_status": 200,
+    "expect_keys": ["glyph_id", "top_candidates"]
+  },
+  {
+    "id": "EP-07", "category": "Epigraphy",
+    "name": "Export JSON",
+    "method": "POST", "path": "/api/v1/epigraphy/export",
+    "body": {"stele_id": "epigraph-adalaj-1498", "format": "json"},
+    "expect_status": 200,
+    "expect_keys": ["format", "content"]
+  },
+  {
+    "id": "EP-08", "category": "Epigraphy",
+    "name": "Export Markdown",
+    "method": "POST", "path": "/api/v1/epigraphy/export",
+    "body": {"stele_id": "epigraph-adalaj-1498", "format": "markdown"},
+    "expect_status": 200,
+    "expect_keys": ["format", "content"]
+  },
+  {
+    "id": "EP-09", "category": "Epigraphy",
+    "name": "Export TEI-XML",
+    "method": "POST", "path": "/api/v1/epigraphy/export",
+    "body": {"stele_id": "epigraph-adalaj-1498", "format": "tei_xml"},
+    "expect_status": 200,
+    "expect_keys": ["format", "content"]
+  },
+  {
+    "id": "EX-01", "category": "Expedition",
+    "name": "Ingest journal",
+    "method": "POST", "path": "/api/v1/expedition/ingest",
+    "body": {
+      "title": "Sim Field Note",
+      "journal": "Visited Adalaj Ni Vav near Gandhinagar. Solanki dynasty carvings visible on the pillars.",
+      "photos": ["https://example.com/field1.jpg"]
+    },
+    "expect_status": 200,
+    "expect_keys": ["assetId", "places", "dynasties", "tags"]
+  },
+  {
+    "id": "EX-02", "category": "Expedition",
+    "name": "List expedition assets",
+    "method": "GET", "path": "/api/v1/expedition/assets",
+    "expect_status": 200,
+    "expect_type": "list"
+  },
+  {
+    "id": "EX-03", "category": "Expedition",
+    "name": "Filter by dynasty",
+    "method": "GET", "path": "/api/v1/expedition/assets?dynasty=solanki",
+    "expect_status": 200,
+    "expect_type": "list"
+  },
+  {
+    "id": "EX-04", "category": "Expedition",
+    "name": "Expedition route GeoJSON",
+    "method": "GET", "path": "/api/v1/expedition/route",
+    "expect_status": 200,
+    "expect_keys": ["type", "route_name", "features"]
+  },
+  {
+    "id": "LO-01", "category": "Loci",
+    "name": "List all loci",
+    "method": "GET", "path": "/api/v1/loci",
+    "expect_status": 200,
+    "expect_keys": ["type", "features"]
+  },
+  {
+    "id": "LO-02", "category": "Loci",
+    "name": "Filter by type stepwell",
+    "method": "GET", "path": "/api/v1/loci?type=stepwell",
+    "expect_status": 200,
+    "expect_keys": ["type", "features"]
+  },
+  {
+    "id": "LO-03", "category": "Loci",
+    "name": "Get single locus",
+    "method": "GET", "path": "/api/v1/loci/adalaj-vav",
+    "expect_status": 200,
+    "expect_keys": ["id", "name", "type", "coordinates"]
+  },
+  {
+    "id": "ST-01", "category": "Studio",
+    "name": "Autocomplete suggestions",
+    "method": "GET", "path": "/api/v1/studio/suggest",
+    "expect_status": 200,
+    "expect_type": "list",
+    "expect_min_length": 1
+  },
+  {
+    "id": "ST-02", "category": "Studio",
+    "name": "Search suggestions (rani)",
+    "method": "GET", "path": "/api/v1/studio/suggest?q=rani",
+    "expect_status": 200,
+    "expect_type": "list",
+    "expect_min_length": 1
+  },
+  {
+    "id": "ST-03", "category": "Studio",
+    "name": "Create studio job",
+    "method": "POST", "path": "/api/v1/studio/jobs",
+    "body": {"query": "Rani Ki Vav", "quality": "high"},
+    "expect_status": 200,
+    "expect_keys": ["jobId", "status", "result"]
+  },
+  {
+    "id": "M4-01", "category": "Monument4D",
+    "name": "Get monument (adalaj)",
+    "method": "GET", "path": "/api/v1/monument4d/adalaj",
+    "expect_status": 200,
+    "expect_keys": ["id", "name", "epochs", "timeline"]
+  },
+  {
+    "id": "M4-02", "category": "Monument4D",
+    "name": "Estimate condition",
+    "method": "POST", "path": "/api/v1/monument4d/adalaj/estimate-condition",
+    "expect_status": 200,
+    "expect_keys": ["monument_id", "model", "age_score", "condition_level"]
+  },
+  {
+    "id": "M4-03", "category": "Monument4D",
+    "name": "Evidence corpus",
+    "method": "GET", "path": "/api/v1/monument4d/adalaj/evidence",
+    "expect_status": 200,
+    "expect_keys": ["monument_id", "evidence_corpus"]
+  }
+]

@@ -1,0 +1,49 @@
+# Render Blueprint Specification for Dharohar 4D
+# HC26-CULT01 | Blithchron '27, IIT Gandhinagar
+# https://render.com/docs/blueprint-spec
+
+version: "1"
+
+services:
+  # ── 1. FASTAPI BACKEND SERVICE ───────────────────────────────────────────
+  - type: web
+    name: dharohar-4d-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    region: oregon
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: WIKI_USER_AGENT
+        value: "Dharohar4D/1.0 (heritage-explorer@dharohar.org)"
+      - key: DATABASE_URL
+        value: "sqlite:///./dharohar.db"
+
+  # ── 2. NEXT.JS FRONTEND SERVICE ──────────────────────────────────────────
+  - type: web
+    name: dharohar-4d-frontend
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 20.12.2
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: dharohar-4d-backend
+          property: host
+

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dharohar 4D — Simulation Report</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: #0F1115;
+    color: #E0D6C8;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+  .header {
+    text-align: center;
+    padding: 2rem 0;
+    border-bottom: 2px solid #C8963E;
+    margin-bottom: 2rem;
+  }
+  .header h1 {
+    font-size: 2rem;
+    color: #C8963E;
+    letter-spacing: 2px;
+  }
+  .header .subtitle {
+    color: #888;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+  .summary {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+  .summary-card {
+    background: #1A1D24;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    min-width: 150px;
+    border: 1px solid #2a2d35;
+  }
+  .summary-card .num {
+    font-size: 2.5rem;
+    font-weight: 700;
+  }
+  .summary-card .label {
+    font-size: 0.85rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .num.green { color: #2ECC71; }
+  .num.red   { color: #B5362B; }
+  .num.gold  { color: #C8963E; }
+  .num.blue  { color: #2B3A67; }
+  .categories {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+  }
+  .cat-card {
+    background: #1A1D24;
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #2a2d35;
+    text-align: center;
+  }
+  .cat-name { font-size: 0.8rem; color: #888; }
+  .cat-stats { font-size: 1.4rem; font-weight: 700; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+    font-size: 0.85rem;
+  }
+  th {
+    background: #2B3A67;
+    color: #C8963E;
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid #1e2128;
+  }
+  tr.pass { background: rgba(46,204,113,0.05); }
+  tr.fail { background: rgba(181,54,43,0.1); }
+  tr:hover { background: rgba(200,150,62,0.08); }
+  .status-badge {
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .status-badge.pass { color: #2ECC71; background: rgba(46,204,113,0.15); }
+  .status-badge.fail { color: #B5362B; background: rgba(181,54,43,0.15); }
+  .path-cell { max-width: 280px; word-break: break-all; }
+  .err-cell { color: #e67e73; font-size: 0.8rem; max-width: 200px; }
+  code { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.82rem; }
+  .footer {
+    text-align: center;
+    padding: 2rem 0;
+    color: #555;
+    font-size: 0.8rem;
+    border-top: 1px solid #222;
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏛️ DHAROHAR 4D — Simulation Report</h1>
+  <div class="subtitle">
+    HC26-CULT01 | Neural Heritage Digital Twin & Epigraphy Engine<br>
+    Generated: 31 Oct 2026, 14:23:51 | Target: http://127.0.0.1:8000
+  </div>
+</div>
+
+<div class="summary">
+  <div class="summary-card">
+    <div class="num gold">27</div>
+    <div class="label">Total Tests</div>
+  </div>
+  <div class="summary-card">
+    <div class="num green">27</div>
+    <div class="label">Passed</div>
+  </div>
+  <div class="summary-card">
+    <div class="num red">0</div>
+    <div class="label">Failed</div>
+  </div>
+  <div class="summary-card">
+    <div class="num green">100%</div>
+    <div class="label">Pass Rate</div>
+  </div>
+</div>
+
+<div class="categories">
+            <div class="cat-card">
+                <div class="cat-name">System</div>
+                <div class="cat-stats" style="color:#2ECC71">1/1</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-name">StepwellTwin</div>
+                <div class="cat-stats" style="color:#2ECC71">6/6</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-name">Epigraphy</div>
+                <div class="cat-stats" style="color:#2ECC71">7/7</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-name">Expedition</div>
+                <div class="cat-stats" style="color:#2ECC71">4/4</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-name">Loci</div>
+                <div class="cat-stats" style="color:#2ECC71">3/3</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-name">Studio</div>
+                <div class="cat-stats" style="color:#2ECC71">3/3</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-name">Monument4D</div>
+                <div class="cat-stats" style="color:#2ECC71">3/3</div>
+            </div></div>
+
+<table>
+<thead>
+  <tr>
+    <th>ID</th><th>Category</th><th>Test</th><th>Method</th>
+    <th>Path</th><th>Status</th><th>Time</th><th>Result</th><th>Error</th>
+  </tr>
+</thead>
+<tbody>
+                <tr class="pass">
+                    <td><code>HC-01</code></td>
+                    <td>System</td>
+                    <td>Health Check</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/healthz</code></td>
+                    <td>200</td>
+                    <td>392.3ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>TW-01</code></td>
+                    <td>StepwellTwin</td>
+                    <td>Metadata endpoint</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/stepwell/metadata</code></td>
+                    <td>200</td>
+                    <td>171.9ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>TW-02</code></td>
+                    <td>StepwellTwin</td>
+                    <td>List all epochs</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/stepwell/epochs</code></td>
+                    <td>200</td>
+                    <td>172.8ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>TW-03</code></td>
+                    <td>StepwellTwin</td>
+                    <td>Single epoch (1498)</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/stepwell/epochs/1498</code></td>
+                    <td>200</td>
+                    <td>188.2ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>TW-04</code></td>
+                    <td>StepwellTwin</td>
+                    <td>Solar position noon</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/stepwell/sun?hour=12&date=2026-06-21</code></td>
+                    <td>200</td>
+                    <td>189.4ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>TW-05</code></td>
+                    <td>StepwellTwin</td>
+                    <td>Interpolate year 1750</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/stepwell/interpolate?year=1750</code></td>
+                    <td>200</td>
+                    <td>182.9ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>TW-06</code></td>
+                    <td>StepwellTwin</td>
+                    <td>Invalid epoch year → 404</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/stepwell/epochs/9999</code></td>
+                    <td>404</td>
+                    <td>171.6ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EP-01</code></td>
+                    <td>Epigraphy</td>
+                    <td>List steles</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/epigraphy/steles</code></td>
+                    <td>200</td>
+                    <td>188.4ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EP-02</code></td>
+                    <td>Epigraphy</td>
+                    <td>Get stele epigraph-adalaj-1498</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/epigraphy/steles/epigraph-adalaj-1498</code></td>
+                    <td>200</td>
+                    <td>187.0ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EP-03</code></td>
+                    <td>Epigraphy</td>
+                    <td>Analyze curated stele</td>
+                    <td><code>POST</code></td>
+                    <td class="path-cell"><code>/api/v1/epigraphy/analyze?stele_id=epigraph-adalaj-1498</code></td>
+                    <td>200</td>
+                    <td>166.9ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EP-06</code></td>
+                    <td>Epigraphy</td>
+                    <td>Glyph candidates</td>
+                    <td><code>POST</code></td>
+                    <td class="path-cell"><code>/api/v1/epigraphy/glyph/candidates</code></td>
+                    <td>200</td>
+                    <td>190.6ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EP-07</code></td>
+                    <td>Epigraphy</td>
+                    <td>Export JSON</td>
+                    <td><code>POST</code></td>
+                    <td class="path-cell"><code>/api/v1/epigraphy/export</code></td>
+                    <td>200</td>
+                    <td>186.1ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EP-08</code></td>
+                    <td>Epigraphy</td>
+                    <td>Export Markdown</td>
+                    <td><code>POST</code></td>
+                    <td class="path-cell"><code>/api/v1/epigraphy/export</code></td>
+                    <td>200</td>
+                    <td>183.1ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EP-09</code></td>
+                    <td>Epigraphy</td>
+                    <td>Export TEI-XML</td>
+                    <td><code>POST</code></td>
+                    <td class="path-cell"><code>/api/v1/epigraphy/export</code></td>
+                    <td>200</td>
+                    <td>173.4ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EX-01</code></td>
+                    <td>Expedition</td>
+                    <td>Ingest journal</td>
+                    <td><code>POST</code></td>
+                    <td class="path-cell"><code>/api/v1/expedition/ingest</code></td>
+                    <td>200</td>
+                    <td>196.4ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EX-02</code></td>
+                    <td>Expedition</td>
+                    <td>List expedition assets</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/expedition/assets</code></td>
+                    <td>200</td>
+                    <td>179.2ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EX-03</code></td>
+                    <td>Expedition</td>
+                    <td>Filter by dynasty</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/expedition/assets?dynasty=solanki</code></td>
+                    <td>200</td>
+                    <td>161.0ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>EX-04</code></td>
+                    <td>Expedition</td>
+                    <td>Expedition route GeoJSON</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/expedition/route</code></td>
+                    <td>200</td>
+                    <td>166.5ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>LO-01</code></td>
+                    <td>Loci</td>
+                    <td>List all loci</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/loci</code></td>
+                    <td>200</td>
+                    <td>189.2ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>LO-02</code></td>
+                    <td>Loci</td>
+                    <td>Filter by type stepwell</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/loci?type=stepwell</code></td>
+                    <td>200</td>
+                    <td>185.8ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>LO-03</code></td>
+                    <td>Loci</td>
+                    <td>Get single locus</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/loci/adalaj-vav</code></td>
+                    <td>200</td>
+                    <td>187.6ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>ST-01</code></td>
+                    <td>Studio</td>
+                    <td>Autocomplete suggestions</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/studio/suggest</code></td>
+                    <td>200</td>
+                    <td>188.5ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>ST-02</code></td>
+                    <td>Studio</td>
+                    <td>Search suggestions (rani)</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/studio/suggest?q=rani</code></td>
+                    <td>200</td>
+                    <td>191.6ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>ST-03</code></td>
+                    <td>Studio</td>
+                    <td>Create studio job</td>
+                    <td><code>POST</code></td>
+                    <td class="path-cell"><code>/api/v1/studio/jobs</code></td>
+                    <td>200</td>
+                    <td>169.2ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>M4-01</code></td>
+                    <td>Monument4D</td>
+                    <td>Get monument (adalaj)</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/monument4d/adalaj</code></td>
+                    <td>200</td>
+                    <td>184.7ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>M4-02</code></td>
+                    <td>Monument4D</td>
+                    <td>Estimate condition</td>
+                    <td><code>POST</code></td>
+                    <td class="path-cell"><code>/api/v1/monument4d/adalaj/estimate-condition</code></td>
+                    <td>200</td>
+                    <td>186.3ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr>
+                <tr class="pass">
+                    <td><code>M4-03</code></td>
+                    <td>Monument4D</td>
+                    <td>Evidence corpus</td>
+                    <td><code>GET</code></td>
+                    <td class="path-cell"><code>/api/v1/monument4d/adalaj/evidence</code></td>
+                    <td>200</td>
+                    <td>187.9ms</td>
+                    <td class="status-badge pass">PASS</td>
+                    <td class="err-cell">—</td>
+                </tr></tbody>
+</table>
+
+<div class="footer">
+  Dharohar 4D Simulation Runner — PRD Section 10.6<br>
+  Blithchron '27, IIT Gandhinagar
+</div>
+
+</body>
+</html>
