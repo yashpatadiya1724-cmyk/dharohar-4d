@@ -12,4 +12,5 @@ Pillow
 imagehash
 pytesseract
 httpx
+reportlab==5.1.0
 pytest

@@ -112,9 +112,9 @@ def seed():
     cur.execute("DELETE FROM resources;")
     cur.execute("DELETE FROM monuments;")
     try:
-        cur.execute("DELETE FROM resources_fts;")
-    except Exception:
-        pass
+        cur.execute("INSERT INTO resources_fts(resources_fts) VALUES('delete-all');")
+    except Exception as e:
+        print(f"FTS clear warning: {e}")
     conn.commit()
 
     print("Seeding 5 Gujarat Monuments...")
