@@ -2,6 +2,7 @@
 
 > **Centralised digital archive for Indian cultural heritage resources with verified historical claims, multilingual search, WebXR mobile AR, honest 3D reconstructions, and cryptographic verification certificates.**
 
+[![Dharohar 4D Backend CI](https://github.com/yashpatadiya1724-cmyk/dharohar-4d/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/yashpatadiya1724-cmyk/dharohar-4d/actions/workflows/ci.yml)
 [![Live Demo](https://img.shields.io/badge/Render-Live_Production_Demo-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://dharohar-4d.onrender.com/)
 [![Pitch Deck PDF](https://img.shields.io/badge/Pitch_Deck-10_Slide_PDF-E11D48?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](Dharohar_4D_Presentation.pdf)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -67,6 +68,12 @@ Backend runs at **http://localhost:8000** (Swagger API Docs at **http://localhos
 npm run dev
 ```
 Open **http://localhost:3000** in your browser.
+
+---
+
+## Tests
+
+20 tests, run with: `python -m pytest backend/tests/ -v`
 
 ---
 
