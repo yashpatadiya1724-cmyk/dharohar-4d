@@ -1,12 +1,10 @@
-# Dharohar 4D (धरोहर 4D) — 10/10 Cultural Heritage Digital Archive
+# Dharohar 4D (धरोहर 4D) — Cultural Heritage Digital Archive
 
 > **Centralised digital archive for Indian cultural heritage resources with verified historical claims, multilingual search, WebXR mobile AR, honest 3D reconstructions, and cryptographic verification certificates.**
 
 [![Live Demo](https://img.shields.io/badge/Render-Live_Production_Demo-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://dharohar-4d.onrender.com/)
 [![Pitch Deck PDF](https://img.shields.io/badge/Pitch_Deck-10_Slide_PDF-E11D48?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](Dharohar_4D_Presentation.pdf)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14-black.svg)](https://nextjs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg)](https://fastapi.tiangolo.com/)
 [![WebXR AR](https://img.shields.io/badge/WebXR-Mobile_AR-FFD700.svg)](https://modelviewer.dev/)
 
 ---
@@ -35,12 +33,12 @@
 ### 3. 📜 Scholarly Heritage Credibility
 - **Interactive India Geo-Explorer**: Visual corridor GIS map filtering monuments across **Dynasty** (*Solanki Empire*, *Chola Empire*, *Mughal Empire*, *Eastern Ganga*) and **State**.
 - **Historical Time-Slider (Then vs. Now)**: Interactive split-screen comparison slider comparing 19th-century colonial surveys (Dr. James Burgess 1890/1903 ASI Western Circle plates) against modern 2026 4D digital twin reconstructions.
-- **ASI Primary Source Verification Stamps**: Every historical claim is sealed with official verification records (e.g., `Verified by ASI Inscription Record #412`, `Epigraphia Indica Vol. IV`).
+- Sample records with source citations. Not officially verified by ASI.
 
 ### 4. 🛡️ Production-Grade Curatorial Review & Security
 - **Modernized Reviewer Auth**: 1-click **"Enter as Certified Reviewer"** (`role: 'reviewer'`) for hassle-free evaluation by hackathon judges, plus institutional Magic Link sign-in.
 - **Interactive Side-by-Side Review Diff**: Reviewers compare original crowdsourced field photos against generated 3D meshes with SfM quality metrics before approving.
-- **Cryptographic Verification Certificates**: Export raw JSON verification certificates or view and print official formatted PDF certificates anchored with SHA-256 asset hashes and ASI review signatures.
+- **Cryptographic Verification Certificates**: Export raw JSON verification certificates or view and print official formatted PDF certificates anchored with SHA-256 asset hashes. Review signatures shown in the UI are simulated.
 
 ---
 
